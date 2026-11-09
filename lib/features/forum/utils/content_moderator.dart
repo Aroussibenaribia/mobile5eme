@@ -56,6 +56,8 @@ class ContentModerator {
     'manyak', 'manyaka',
     'nik', 'niqha',
     'weld lqahba',
+    // Escroqueries / accusations
+    'arnaque', 'escroc', 'voleur',
     // Variantes leet speak / contournement
     'm3rde', 'c0nnard', 'put1n', 'put@in', 'enc*le',
     // ─── English profanity & hate speech ────────────────────────────────────
