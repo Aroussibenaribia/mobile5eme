@@ -8,6 +8,7 @@ import 'core/theme/app_theme.dart';
 import 'features/onboarding/screens/splash_screen.dart';
 import 'services/auth_service.dart';
 import 'services/professional_service.dart';
+import 'features/forum/providers/forum_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +42,7 @@ class HomeFixApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => ProfessionalService()),
+        ChangeNotifierProvider(create: (_) => ForumProvider()),
       ],
       child: MaterialApp(
         title: 'HomeFix — Services à Domicile',
