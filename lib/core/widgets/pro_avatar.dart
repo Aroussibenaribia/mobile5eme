@@ -31,22 +31,29 @@ class ProAvatar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        CircleAvatar(
-          radius: radius,
-          backgroundColor: AppColors.primaryLight,
-          backgroundImage: imageUrl != null && imageUrl!.isNotEmpty
-              ? NetworkImage(imageUrl!)
-              : null,
-          child: (imageUrl == null || imageUrl!.isEmpty)
-              ? Text(
-                  _initials,
-                  style: TextStyle(
-                    color: AppColors.primaryDark,
-                    fontWeight: FontWeight.bold,
-                    fontSize: radius * 0.75,
-                  ),
-                )
-              : null,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(radius * .55),
+          child: Container(
+            width: radius * 2,
+            height: radius * 2,
+            color: AppColors.primaryLight,
+            alignment: Alignment.center,
+            child: imageUrl != null && imageUrl!.isNotEmpty
+                ? Image.network(imageUrl!,
+                    fit: BoxFit.cover,
+                    width: radius * 2,
+                    height: radius * 2,
+                    errorBuilder: (_, __, ___) => Text(_initials,
+                        style: TextStyle(
+                            color: AppColors.primaryDark,
+                            fontSize: radius * .75,
+                            fontWeight: FontWeight.w700)))
+                : Text(_initials,
+                    style: TextStyle(
+                        color: AppColors.primaryDark,
+                        fontSize: radius * .75,
+                        fontWeight: FontWeight.w700)),
+          ),
         ),
         if (showVerifiedBadge)
           Positioned(

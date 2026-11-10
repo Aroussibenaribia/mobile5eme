@@ -33,10 +33,13 @@ class ForumCommentTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: comment.isAcceptedSolution ? const Color(0xFFF0FDF4) : Colors.white,
+        color:
+            comment.isAcceptedSolution ? const Color(0xFFF0FDF4) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: comment.isAcceptedSolution ? const Color(0xFF86EFAC) : AppColors.cardBorder,
+          color: comment.isAcceptedSolution
+              ? const Color(0xFF86EFAC)
+              : AppColors.cardBorder,
           width: comment.isAcceptedSolution ? 1.5 : 1,
         ),
       ),
@@ -74,7 +77,8 @@ class ForumCommentTile extends StatelessWidget {
                         if (comment.isAcceptedSolution) ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1.5),
                             decoration: BoxDecoration(
                               color: AppColors.success,
                               borderRadius: BorderRadius.circular(6),
@@ -82,7 +86,8 @@ class ForumCommentTile extends StatelessWidget {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check, color: Colors.white, size: 10),
+                                Icon(Icons.check,
+                                    color: Colors.white, size: 10),
                                 SizedBox(width: 2),
                                 Text(
                                   'Solution',
@@ -106,13 +111,16 @@ class ForumCommentTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: isArtisan ? AppColors.primary : AppColors.textSecondary,
+                            color: isArtisan
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '• ${RelativeTimeFormatter.format(comment.createdAt)}',
-                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                          style: const TextStyle(
+                              fontSize: 11, color: AppColors.textMuted),
                         ),
                       ],
                     ),
@@ -121,7 +129,8 @@ class ForumCommentTile extends StatelessWidget {
               ),
               if (isMyComment)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.textMuted),
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      size: 18, color: AppColors.textMuted),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   onPressed: () async {
@@ -161,13 +170,18 @@ class ForumCommentTile extends StatelessWidget {
                 onTap: onLike,
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Row(
                     children: [
                       Icon(
-                        hasLiked ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
+                        hasLiked
+                            ? Icons.thumb_up_rounded
+                            : Icons.thumb_up_outlined,
                         size: 15,
-                        color: hasLiked ? AppColors.primary : AppColors.textSecondary,
+                        color: hasLiked
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
                       ),
                       const SizedBox(width: 5),
                       Text(
@@ -175,7 +189,9 @@ class ForumCommentTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: hasLiked ? AppColors.primary : AppColors.textSecondary,
+                          color: hasLiked
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -187,7 +203,8 @@ class ForumCommentTile extends StatelessWidget {
               if (isPostAuthor && !comment.isAcceptedSolution)
                 TextButton.icon(
                   onPressed: onMarkSolution,
-                  icon: const Icon(Icons.check_circle_outline_rounded, size: 16, color: AppColors.success),
+                  icon: const Icon(Icons.check_circle_outline_rounded,
+                      size: 16, color: AppColors.success),
                   label: const Text(
                     'Valider comme solution',
                     style: TextStyle(
@@ -197,7 +214,8 @@ class ForumCommentTile extends StatelessWidget {
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     backgroundColor: const Color(0xFFF0FDF4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

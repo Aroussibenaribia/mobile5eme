@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HomeFix — Aperçus des écrans</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #203b33; background: #f4f5ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header, main, footer { max-width: 1220px; margin: auto; padding: 32px 24px; }
+    header { padding-top: 52px; }
+    .brand { color: #16695b; font-weight: 750; letter-spacing: .04em; }
+    h1 { font-size: clamp(28px,4vw,44px); margin: 12px 0; letter-spacing: -.04em; }
+    h2 { font-size: 19px; margin: 0 0 8px; }
+    p { line-height: 1.65; margin: 8px 0; color: #637268; max-width: 800px; }
+    a { color: #16695b; }
+    .note { padding: 16px 20px; border: 1px solid #99d9d0; border-radius: 16px; background: #ecfdf8; margin: 24px 0; }
+    .accounts { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; }
+    code { background: #dde3d8; padding: 2px 5px; border-radius: 4px; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; }
+    button { font: inherit; cursor: pointer; border: 1px solid #cbd5e1; border-radius: 24px; padding: 10px 18px; color: #334155; background: white; }
+    button[aria-pressed="true"] { background: #16695b; color: white; border-color: #16695b; }
+    button:focus-visible, a:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,300px),1fr)); gap: 32px 24px; }
+    article { border: 1px solid #dde3d8; border-radius: 20px; background: white; padding: 20px; min-width: 0; }
+    article p { min-height: 74px; font-size: 14px; }
+    .tag { font-size: 12px; color: #16695b; font-weight: 650; display: block; margin-bottom: 8px; }
+    article img { display: block; width: 100%; height: auto; border: 1px solid #dde3d8; border-radius: 14px; margin-top: 20px; }
+    article a { display: block; }
+    [hidden] { display: none !important; }
+    footer { border-top: 1px solid #dde3d8; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">HOMEFIX · FLUTTER + SQLITE</span>
+    <h1>HomeFix, une interface repensée</h1>
+    <p>Prestations, réservations et réclamations reliées aux comptes client et professionnel. Le panel administrateur contient deux sections : Réclamations et Utilisateurs.</p>
+    <div class="note">
+      <strong>Aperçus des widgets Flutter</strong>
+      <p>Ces images proviennent des vrais écrans et des données SQLite de démonstration. Cette galerie présente les widgets de la refonte du 10 novembre. Cette refonte a aussi été compilée et installée avec succès depuis le terminal Windows.</p>
+    </div>
+    <div class="accounts">
+      <span>Client : <code>client@homefix.com</code></span>
+      <span>Pro : <code>pro@homefix.com</code></span>
+      <span>Admin : <code>admin@homefix.com</code></span>
+      <span>Mot de passe : <code>HomeFix123!</code></span>
+    </div>
+    <nav aria-label="Filtrer les aperçus">
+      <button data-filter="all" aria-pressed="true">Tous les écrans</button>
+      <button data-filter="admin" aria-pressed="false">Administrateur</button>
+      <button data-filter="pro" aria-pressed="false">Professionnel</button>
+      <button data-filter="client" aria-pressed="false">Client</button>
+    </nav>
+  </header>
+  <main class="grid">
+    <article data-role="client"><span class="tag">CLIENT</span><h2>Accueil client</h2><p>Métiers, nombre réel d’artisans et accès aux prochaines réservations.</p><a href="10-accueil-client.png" target="_blank" rel="noopener"><img loading="lazy" src="10-accueil-client.png" alt="Accueil client"></a></article>
+    <article data-role="client"><span class="tag">CLIENT</span><h2>Catalogue des artisans</h2><p>Recherche par métier, prestation ou ville, avec les tarifs des offres publiées.</p><a href="11-catalogue-artisans.png" target="_blank" rel="noopener"><img loading="lazy" src="11-catalogue-artisans.png" alt="Catalogue des artisans"></a></article>
+    <article data-role="client"><span class="tag">CLIENT</span><h2>Fiche artisan repensée</h2><p>Prestations réservables individuellement, jours de travail et présentation du professionnel.</p><a href="12-fiche-artisan.png" target="_blank" rel="noopener"><img loading="lazy" src="12-fiche-artisan.png" alt="Fiche artisan repensée"></a></article>
+    <article data-role="client"><span class="tag">CLIENT</span><h2>Connexion</h2><p>Un accès clair au compte, à la récupération du mot de passe et aux comptes de démonstration.</p><a href="13-connexion.png" target="_blank" rel="noopener"><img loading="lazy" src="13-connexion.png" alt="Connexion"></a></article>
+    <article data-role="pro"><span class="tag">PROFESSIONNEL</span><h2>Accueil professionnel</h2><p>Demandes à confirmer, prestations publiées et prochains rendez-vous.</p><a href="17-accueil-professionnel.png" target="_blank" rel="noopener"><img loading="lazy" src="17-accueil-professionnel.png" alt="Accueil professionnel"></a></article>
+    <article data-role="pro"><span class="tag">PROFESSIONNEL</span><h2>Profil professionnel</h2><p>Les coordonnées, la présentation et le planning du compte connecté.</p><a href="14-profil-professionnel.png" target="_blank" rel="noopener"><img loading="lazy" src="14-profil-professionnel.png" alt="Profil professionnel"></a></article>
+    <article data-role="pro"><span class="tag">PROFESSIONNEL</span><h2>Modifier son profil</h2><p>Coordonnées et présentation enregistrées dans SQLite.</p><a href="15-modifier-profil.png" target="_blank" rel="noopener"><img loading="lazy" src="15-modifier-profil.png" alt="Modifier son profil"></a></article>
+    <article data-role="pro"><span class="tag">PROFESSIONNEL</span><h2>Choisir ses jours de travail</h2><p>Les sept jours sont sélectionnables. Un interrupteur permet de mettre les nouvelles réservations en pause.</p><a href="16-jours-de-travail.png" target="_blank" rel="noopener"><img loading="lazy" src="16-jours-de-travail.png" alt="Choisir ses jours de travail"></a></article>
+    <article data-role="admin"><span class="tag">ADMINISTRATEUR</span><h2>Réclamations</h2><p>Recherche, filtre par statut et accès au dossier avec le client, le professionnel et la réservation concernés.</p><a href="01-admin-reclamations.png" target="_blank" rel="noopener"><img src="01-admin-reclamations.png" alt="Liste des réclamations dans le panel administrateur"></a></article>
+    <article data-role="admin"><span class="tag">ADMINISTRATEUR</span><h2>Utilisateurs</h2><p>Recherche et filtre des comptes. Leur détail propose la suspension, la réactivation et la réinitialisation du mot de passe.</p><a href="02-admin-utilisateurs.png" target="_blank" rel="noopener"><img src="02-admin-utilisateurs.png" alt="Liste des comptes client et professionnel"></a></article>
+    <article data-role="admin"><span class="tag">ADMINISTRATEUR</span><h2>Dossier de réclamation</h2><p>Description du problème, identité des deux participants, prestation et lien vers la réservation.</p><a href="03-analyse-reclamation.png" target="_blank" rel="noopener"><img loading="lazy" src="03-analyse-reclamation.png" alt="Détail d’une réclamation et de ses participants"></a></article>
+    <article data-role="admin"><span class="tag">ADMINISTRATEUR</span><h2>Analyse et décision</h2><p>Passage en cours d’analyse, résolution ou rejet avec justification. Le traitement conserve son auteur et sa date.</p><a href="04-decision-admin.png" target="_blank" rel="noopener"><img loading="lazy" src="04-decision-admin.png" alt="Formulaire de décision administrative"></a></article>
+    <article data-role="pro"><span class="tag">PROFESSIONNEL</span><h2>Mes prestations</h2><p>Catalogue personnel, prix et durée. Modification, retrait ou archivage des prestations déjà réservées.</p><a href="05-services-professionnel.png" target="_blank" rel="noopener"><img loading="lazy" src="05-services-professionnel.png" alt="Gestion des prestations du professionnel"></a></article>
+    <article data-role="pro"><span class="tag">PROFESSIONNEL</span><h2>Nouvelle prestation</h2><p>Titre, description, prix en dinars, durée et disponibilité. La prestation appartient au professionnel connecté.</p><a href="06-nouvelle-prestation.png" target="_blank" rel="noopener"><img loading="lazy" src="06-nouvelle-prestation.png" alt="Formulaire d’ajout d’une prestation"></a></article>
+    <article data-role="client"><span class="tag">CLIENT</span><h2>Réserver une prestation</h2><p>Prestation précise, tarif, professionnel, date, heure et adresse. Les conflits de réservation sont refusés.</p><a href="07-reservation-client.png" target="_blank" rel="noopener"><img loading="lazy" src="07-reservation-client.png" alt="Formulaire de réservation d’une prestation"></a></article>
+    <article data-role="client"><span class="tag">CLIENT</span><h2>Détail de la réservation</h2><p>Les participants, le rendez-vous et le tarif convenu restent disponibles dans l’historique.</p><a href="08-detail-reservation.png" target="_blank" rel="noopener"><img loading="lazy" src="08-detail-reservation.png" alt="Détail de la réservation et accès à une réclamation"></a></article>
+    <article data-role="client"><span class="tag">CLIENT</span><h2>Déposer une réclamation</h2><p>Réservation du client, objet et description. Les deux utilisateurs sont identifiés automatiquement.</p><a href="09-reclamation-client.png" target="_blank" rel="noopener"><img loading="lazy" src="09-reclamation-client.png" alt="Formulaire de réclamation liée à une réservation"></a></article>
+  </main>
+  <footer>
+    <p>Cliquez sur une image pour l’ouvrir en grand. Rendu à 390 × 844 avec Roboto local ; l’application conserve son thème Plus Jakarta Sans.</p>
+    <p><a href="../../README.md">Guide du projet</a> · <a href="../../IMPLEMENTATION.md">Détails et vérification</a></p>
+  </footer>
+  <script>
+    document.querySelectorAll('button[data-filter]').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('button[data-filter]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        document.querySelectorAll('article[data-role]').forEach(card => { card.hidden = button.dataset.filter !== 'all' && card.dataset.role !== button.dataset.filter; });
+      });
+    });
+  </script>
+</body>
+</html>

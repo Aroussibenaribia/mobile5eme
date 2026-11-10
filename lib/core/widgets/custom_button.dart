@@ -52,9 +52,15 @@ class CustomButton extends StatelessWidget {
           children: [
             Icon(icon, size: 20),
             const SizedBox(width: 8),
-            Text(
-              text,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              ),
             ),
           ],
         );
@@ -62,6 +68,9 @@ class CustomButton extends StatelessWidget {
 
       return Text(
         text,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
       );
     }
@@ -77,7 +86,8 @@ class CustomButton extends StatelessWidget {
               backgroundColor: customColor ?? AppColors.primary,
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
             ),
             child: childContent(),
           ),
@@ -92,7 +102,8 @@ class CustomButton extends StatelessWidget {
               backgroundColor: AppColors.secondary,
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
             ),
             child: childContent(),
           ),
@@ -105,8 +116,10 @@ class CustomButton extends StatelessWidget {
             onPressed: isLoading ? null : onPressed,
             style: OutlinedButton.styleFrom(
               foregroundColor: customColor ?? AppColors.primary,
-              side: BorderSide(color: customColor ?? AppColors.primary, width: 1.5),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              side: BorderSide(
+                  color: customColor ?? AppColors.primary, width: 1.5),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
             ),
             child: childContent(),
           ),

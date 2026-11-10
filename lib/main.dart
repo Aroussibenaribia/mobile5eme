@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'core/data/homefix_repository.dart';
+import 'services/homefix_data.dart';
 
-import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
-import 'features/onboarding/screens/splash_screen.dart';
+import 'features/shell/screens/main_shell_screen.dart';
 import 'services/auth_service.dart';
 import 'services/professional_service.dart';
 import 'features/forum/providers/forum_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase with auto-generated options
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    debugPrint('Firebase initialization note: $e');
-  }
 
   // Set clean system UI overlay
   SystemChrome.setSystemUIOverlayStyle(
@@ -40,15 +31,23 @@ class HomeFixApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => ProfessionalService()),
+        ChangeNotifierProvider(create: (_) => HomeFixRepository()),
+        ChangeNotifierProvider(
+            create: (ctx) => HomeFixData(ctx.read<HomeFixRepository>())),
+        ChangeNotifierProvider(
+            create: (ctx) => AuthService(
+                repository: ctx.read<HomeFixRepository>(),
+                restoreSession: true)),
+        ChangeNotifierProvider(
+            create: (ctx) =>
+                ProfessionalService(repository: ctx.read<HomeFixRepository>())),
         ChangeNotifierProvider(create: (_) => ForumProvider()),
       ],
       child: MaterialApp(
         title: 'HomeFix — Services à Domicile',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const SplashScreen(),
+        home: const MainShellScreen(),
       ),
     );
   }

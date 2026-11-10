@@ -1,17 +1,9 @@
-# 🔎 Espace de Travail : Membre 2
+# Réservations
 
-## Périmètre du Membre 2 :
-- **Recherche de services**
-- **Réservation d'un créneau**
-- **Demande de service**
-- **Géolocalisation des prestations**
+`screens/booking_screens.dart` contient la liste filtrable, le formulaire d'une prestation sélectionnée et le détail avec actions selon le rôle.
 
-## Modèles partagés à utiliser :
-- `lib/models/booking_model.dart` : Modèle de données pour les réservations
-- `lib/models/professional_model.dart` : Modèle des artisans à réserver
-- `lib/models/service_category_model.dart` : Catégories de services
+Les écritures passent par `HomeFixRepository` : `serviceId`, `clientId` et `proId` sont déduits du service et de la session. Le prix, le titre et la durée sont conservés dans la réservation. Les créneaux qui se chevauchent sont refusés dans une transaction SQLite.
 
-## Écrans à implémenter dans ce dossier :
-- `screens/search_screen.dart` : Recherche avancée avec filtres de localisation et date
-- `screens/booking_flow_screen.dart` : Sélection de date, heure, adresse et validation
-- `screens/service_request_screen.dart` : Formulaire de demande de devis personnalisé
+Parcours : demande → confirmation → intervention en cours → terminée. L'annulation reste disponible avant le démarrage selon le rôle. Le client peut déposer une réclamation liée depuis le détail.
+
+La recherche du catalogue reste dans `features/professionals/` et `ProfessionalService`. La géolocalisation GPS et les demandes de devis personnalisés ne sont pas implémentées dans ce périmètre.

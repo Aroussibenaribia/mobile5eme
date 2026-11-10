@@ -1,18 +1,9 @@
-# ⭐ Espace de Travail : Membre 3
+# Historique et réclamations
 
-## Périmètre du Membre 3 :
-- **Avis et Évaluations** (Notation étoiles, avis vérifiés, commentaires)
-- **Réclamations & Signalements** (Formulaire de réclamation, statut litige)
-- **Notifications** (Notifications push & liste des alertes in-app)
-- **Historique des demandes** (Suivi en temps réel des interventions passées et en cours)
+`screens/reclamation_screens.dart` contient l'historique, la liste filtrable des réclamations, le formulaire de création/modification et le détail avec suivi administratif.
 
-## Modèles partagés à utiliser :
-- `lib/models/review_model.dart` : Modèle pour les avis et notations
-- `lib/models/booking_model.dart` : Modèle pour l'historique des réservations
+Le client choisit une de ses réservations. `HomeFixRepository` déduit les deux utilisateurs depuis cette réservation ; la clé étrangère composite SQLite protège cette relation. Une seule réclamation ouverte par réservation est autorisée.
 
-## Écrans à implémenter dans ce dossier :
-- `screens/reviews_list_screen.dart` : Consultation des avis d'un professionnel
-- `screens/add_review_screen.dart` : Notation d'une prestation terminée
-- `screens/history_screen.dart` : Historique des demandes de service
-- `screens/complaint_screen.dart` : Déposer une réclamation
-- `screens/notifications_screen.dart` : Centre de notifications
+Une réclamation en attente peut être modifiée ou supprimée par son client. L'administrateur peut la passer en cours d'analyse, résolue ou rejetée avec une justification. Le traitement enregistre l'administrateur et la date. Une décision finale est conservée et visible par les deux participants.
+
+Le panel administratif à deux sections se trouve dans `features/admin/`. Les avis/notations et notifications push n'ont pas été étendus dans ce périmètre.

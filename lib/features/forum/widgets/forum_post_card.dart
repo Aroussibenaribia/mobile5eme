@@ -33,7 +33,8 @@ class ForumPostCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: post.isResolved ? const Color(0xFFBBF7D0) : AppColors.cardBorder,
+          color:
+              post.isResolved ? const Color(0xFFBBF7D0) : AppColors.cardBorder,
           width: post.isResolved ? 1.5 : 1,
         ),
         boxShadow: [
@@ -58,7 +59,8 @@ class ForumPostCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: categoryColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
@@ -82,7 +84,8 @@ class ForumPostCard extends StatelessWidget {
                     const Spacer(),
                     if (post.isResolved)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3.5),
                         decoration: BoxDecoration(
                           color: const Color(0xFFDCFCE7), // Emerald 100
                           borderRadius: BorderRadius.circular(12),
@@ -91,7 +94,8 @@ class ForumPostCard extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.check_circle_rounded, size: 12, color: AppColors.success),
+                            Icon(Icons.check_circle_rounded,
+                                size: 12, color: AppColors.success),
                             SizedBox(width: 3),
                             Text(
                               'Résolu',
@@ -106,7 +110,8 @@ class ForumPostCard extends StatelessWidget {
                       )
                     else if (post.commentCount == 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3.5),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceMuted,
                           borderRadius: BorderRadius.circular(12),
@@ -172,7 +177,8 @@ class ForumPostCard extends StatelessWidget {
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.photo_rounded, color: AppColors.primary, size: 18),
+                                  Icon(Icons.photo_rounded,
+                                      color: AppColors.primary, size: 18),
                                   SizedBox(width: 6),
                                   Text(
                                     'Photo du diagnostic jointe',
@@ -200,7 +206,8 @@ class ForumPostCard extends StatelessWidget {
                       name: post.authorName,
                       imageUrl: post.authorAvatar,
                       radius: 13,
-                      showVerifiedBadge: post.authorRole.toLowerCase().contains('artisan'),
+                      showVerifiedBadge:
+                          post.authorRole.toLowerCase().contains('artisan'),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -233,18 +240,25 @@ class ForumPostCard extends StatelessWidget {
                       onTap: onUpvote,
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: hasUpvoted ? AppColors.primaryLight : AppColors.surfaceMuted,
+                          color: hasUpvoted
+                              ? AppColors.primaryLight
+                              : AppColors.surfaceMuted,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              hasUpvoted ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
+                              hasUpvoted
+                                  ? Icons.thumb_up_rounded
+                                  : Icons.thumb_up_outlined,
                               size: 14,
-                              color: hasUpvoted ? AppColors.primaryDark : AppColors.textSecondary,
+                              color: hasUpvoted
+                                  ? AppColors.primaryDark
+                                  : AppColors.textSecondary,
                             ),
                             const SizedBox(width: 5),
                             Text(
@@ -252,7 +266,9 @@ class ForumPostCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: hasUpvoted ? AppColors.primaryDark : AppColors.textSecondary,
+                                color: hasUpvoted
+                                    ? AppColors.primaryDark
+                                    : AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -264,7 +280,8 @@ class ForumPostCard extends StatelessWidget {
 
                     // Comments counter badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceMuted,
                         borderRadius: BorderRadius.circular(10),

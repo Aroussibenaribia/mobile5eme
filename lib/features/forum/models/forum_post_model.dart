@@ -88,8 +88,10 @@ class ForumPostModel {
       isResolved: (map['is_resolved'] == 1 || map['is_resolved'] == true),
       resolvedCommentId: map['resolved_comment_id'] as String?,
       isPinned: (map['is_pinned'] == 1 || map['is_pinned'] == true),
-      createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(map['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(map['updated_at'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 

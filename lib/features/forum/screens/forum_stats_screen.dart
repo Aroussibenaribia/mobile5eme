@@ -27,7 +27,9 @@ class _ForumStatsScreenState extends State<ForumStatsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ForumProvider>().loadUserStats(widget.userId, userRole: widget.userRole);
+      context
+          .read<ForumProvider>()
+          .loadUserStats(widget.userId, userRole: widget.userRole);
     });
   }
 
@@ -35,7 +37,8 @@ class _ForumStatsScreenState extends State<ForumStatsScreen> {
   Widget build(BuildContext context) {
     final forumProvider = context.watch<ForumProvider>();
     final stats = forumProvider.userStats;
-    final myPosts = forumProvider.posts.where((p) => p.authorId == widget.userId).toList();
+    final myPosts =
+        forumProvider.posts.where((p) => p.authorId == widget.userId).toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -82,16 +85,19 @@ class _ForumStatsScreenState extends State<ForumStatsScreen> {
                   // Gamification Badge
                   if (stats != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color: stats.badgeColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: stats.badgeColor.withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color: stats.badgeColor.withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(stats.badgeIcon, size: 16, color: stats.badgeColor),
+                          Icon(stats.badgeIcon,
+                              size: 16, color: stats.badgeColor),
                           const SizedBox(width: 6),
                           Text(
                             stats.badgeTitle,
@@ -166,11 +172,15 @@ class _ForumStatsScreenState extends State<ForumStatsScreen> {
                 ),
                 child: const Column(
                   children: [
-                    Icon(Icons.post_add_rounded, size: 40, color: AppColors.textMuted),
+                    Icon(Icons.post_add_rounded,
+                        size: 40, color: AppColors.textMuted),
                     SizedBox(height: 10),
                     Text(
                       'Vous n\'avez pas encore posé de question.',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -188,7 +198,8 @@ class _ForumStatsScreenState extends State<ForumStatsScreen> {
                       ),
                     );
                   },
-                  onUpvote: () => forumProvider.toggleUpvote(post.id, widget.userId),
+                  onUpvote: () =>
+                      forumProvider.toggleUpvote(post.id, widget.userId),
                 ),
               ),
           ],

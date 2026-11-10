@@ -64,8 +64,10 @@ class ForumCommentModel {
       content: map['content'] as String,
       likes: (map['likes'] as num?)?.toInt() ?? 0,
       likedBy: parsedLikedBy,
-      isAcceptedSolution: (map['is_accepted_solution'] == 1 || map['is_accepted_solution'] == true),
-      createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ?? DateTime.now(),
+      isAcceptedSolution: (map['is_accepted_solution'] == 1 ||
+          map['is_accepted_solution'] == true),
+      createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 

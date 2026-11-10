@@ -17,7 +17,8 @@ class ForumFeedScreen extends StatelessWidget {
     return MaterialPageRoute(builder: (_) => const ForumFeedScreen());
   }
 
-  void _showFilterBottomSheet(BuildContext context, ForumProvider forumProvider) {
+  void _showFilterBottomSheet(
+      BuildContext context, ForumProvider forumProvider) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -50,7 +51,8 @@ class ForumFeedScreen extends StatelessWidget {
                           forumProvider.setSortBy('newest');
                           Navigator.pop(ctx);
                         },
-                        child: const Text('Réinitialiser', style: TextStyle(color: AppColors.primary)),
+                        child: const Text('Réinitialiser',
+                            style: TextStyle(color: AppColors.primary)),
                       ),
                     ],
                   ),
@@ -59,7 +61,10 @@ class ForumFeedScreen extends StatelessWidget {
                   // Statut de résolution
                   const Text(
                     'Statut de la question',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -83,7 +88,8 @@ class ForumFeedScreen extends StatelessWidget {
                       ),
                       _buildFilterChoiceChip(
                         label: 'Sans réponse',
-                        isSelected: forumProvider.selectedStatus == 'unresolved',
+                        isSelected:
+                            forumProvider.selectedStatus == 'unresolved',
                         onTap: () {
                           forumProvider.setStatusFilter('unresolved');
                           setModalState(() {});
@@ -97,7 +103,10 @@ class ForumFeedScreen extends StatelessWidget {
                   // Ordre de tri
                   const Text(
                     'Trier par',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -137,9 +146,13 @@ class ForumFeedScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Appliquer les filtres', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: const Text('Appliquer les filtres',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -218,10 +231,12 @@ class ForumFeedScreen extends StatelessWidget {
           );
         },
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_comment_rounded, color: Colors.white, size: 20),
+        icon: const Icon(Icons.add_comment_rounded,
+            color: Colors.white, size: 20),
         label: const Text(
           'Poser une question',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
         ),
         elevation: 3,
       ),
@@ -237,7 +252,8 @@ class ForumFeedScreen extends StatelessWidget {
                   children: [
                     ForumSearchBar(
                       onSearchChanged: provider.setSearchQuery,
-                      onFilterTap: () => _showFilterBottomSheet(context, provider),
+                      onFilterTap: () =>
+                          _showFilterBottomSheet(context, provider),
                       activeSort: provider.sortBy,
                       activeStatus: provider.selectedStatus,
                     ),
@@ -258,12 +274,15 @@ class ForumFeedScreen extends StatelessWidget {
                   onRefresh: () async => await provider.loadPosts(),
                   color: AppColors.primary,
                   child: provider.isLoading
-                      ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.primary))
                       : provider.posts.isEmpty
                           ? _buildEmptyState(context, provider)
                           : ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 14, 16, 80),
                               itemCount: provider.posts.length,
                               itemBuilder: (context, index) {
                                 final post = provider.posts[index];
@@ -274,11 +293,13 @@ class ForumFeedScreen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => PostDetailScreen(postId: post.id),
+                                        builder: (_) =>
+                                            PostDetailScreen(postId: post.id),
                                       ),
                                     );
                                   },
-                                  onUpvote: () => provider.toggleUpvote(post.id, currentUserId),
+                                  onUpvote: () => provider.toggleUpvote(
+                                      post.id, currentUserId),
                                 );
                               },
                             ),
@@ -306,11 +327,14 @@ class ForumFeedScreen extends StatelessWidget {
                 color: AppColors.primaryLight.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.forum_outlined, size: 54, color: AppColors.primary),
+              child: const Icon(Icons.forum_outlined,
+                  size: 54, color: AppColors.primary),
             ),
             const SizedBox(height: 18),
             Text(
-              isSearching ? 'Aucun résultat trouvé' : 'Aucune question dans cette catégorie',
+              isSearching
+                  ? 'Aucun résultat trouvé'
+                  : 'Aucune question dans cette catégorie',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 16.5,
@@ -324,7 +348,8 @@ class ForumFeedScreen extends StatelessWidget {
                   ? 'Essayez de modifier vos termes de recherche ou d\'effacer les filtres.'
                   : 'Soyez le premier à poser une question technique ou partager une astuce !',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13.5, color: AppColors.textSecondary),
+              style: const TextStyle(
+                  fontSize: 13.5, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 20),
             if (isSearching)
@@ -334,11 +359,14 @@ class ForumFeedScreen extends StatelessWidget {
                   provider.setCategory('Tous');
                   provider.setStatusFilter('all');
                 },
-                icon: const Icon(Icons.refresh_rounded, size: 18, color: AppColors.primary),
-                label: const Text('Réinitialiser la recherche', style: TextStyle(color: AppColors.primary)),
+                icon: const Icon(Icons.refresh_rounded,
+                    size: 18, color: AppColors.primary),
+                label: const Text('Réinitialiser la recherche',
+                    style: TextStyle(color: AppColors.primary)),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
           ],

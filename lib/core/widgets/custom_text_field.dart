@@ -59,6 +59,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
           initialValue: widget.initialValue,
           obscureText: widget.isPassword ? _obscureText : false,
           keyboardType: widget.keyboardType,
+          autocorrect: !widget.isPassword &&
+              widget.keyboardType != TextInputType.emailAddress,
+          enableSuggestions: !widget.isPassword &&
+              widget.keyboardType != TextInputType.emailAddress,
+          textCapitalization:
+              widget.isPassword || widget.keyboardType != TextInputType.text
+                  ? TextCapitalization.none
+                  : TextCapitalization.sentences,
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           readOnly: widget.readOnly,
           onTap: widget.onTap,
@@ -70,11 +79,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
           decoration: InputDecoration(
             hintText: widget.hint,
-            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon, size: 20) : null,
+            prefixIcon: widget.prefixIcon != null
+                ? Icon(widget.prefixIcon, size: 20)
+                : null,
             suffixIcon: widget.isPassword
                 ? IconButton(
                     icon: Icon(
-                      _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      _obscureText
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       size: 20,
                     ),
                     onPressed: () {

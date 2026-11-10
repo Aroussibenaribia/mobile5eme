@@ -49,7 +49,8 @@ class ForumRepository {
       orderBy = 'is_pinned DESC, comment_count DESC, created_at DESC';
     }
 
-    final whereString = whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null;
+    final whereString =
+        whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null;
 
     final maps = await db.query(
       'forum_posts',
@@ -196,7 +197,8 @@ class ForumRepository {
   }
 
   /// Toggle Like sur un commentaire
-  Future<ForumCommentModel?> toggleCommentLike(String commentId, String userId) async {
+  Future<ForumCommentModel?> toggleCommentLike(
+      String commentId, String userId) async {
     final db = await _dbProvider.database;
     final maps = await db.query(
       'forum_comments',
@@ -266,7 +268,8 @@ class ForumRepository {
   }
 
   /// Récupère les statistiques de gamification d'un utilisateur (Métier 6)
-  Future<UserForumStatsModel> getUserStats(String userId, {String userRole = 'client'}) async {
+  Future<UserForumStatsModel> getUserStats(String userId,
+      {String userRole = 'client'}) async {
     final db = await _dbProvider.database;
 
     // Nombre de questions posées

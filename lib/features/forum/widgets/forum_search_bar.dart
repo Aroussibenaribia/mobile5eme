@@ -40,7 +40,8 @@ class _ForumSearchBarState extends State<ForumSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasActiveFilter = widget.activeStatus != 'all' || widget.activeSort != 'newest';
+    final bool hasActiveFilter =
+        widget.activeStatus != 'all' || widget.activeSort != 'newest';
 
     return Row(
       children: [
@@ -73,7 +74,8 @@ class _ForumSearchBarState extends State<ForumSearchBar> {
                 ),
                 suffixIcon: _controller.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textMuted),
+                        icon: const Icon(Icons.clear_rounded,
+                            size: 18, color: AppColors.textMuted),
                         onPressed: () {
                           _controller.clear();
                           widget.onSearchChanged('');
@@ -82,7 +84,8 @@ class _ForumSearchBarState extends State<ForumSearchBar> {
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
             ),
           ),
@@ -98,7 +101,8 @@ class _ForumSearchBarState extends State<ForumSearchBar> {
               color: hasActiveFilter ? AppColors.primaryLight : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: hasActiveFilter ? AppColors.primary : AppColors.cardBorder,
+                color:
+                    hasActiveFilter ? AppColors.primary : AppColors.cardBorder,
                 width: hasActiveFilter ? 1.5 : 1,
               ),
             ),
@@ -107,7 +111,9 @@ class _ForumSearchBarState extends State<ForumSearchBar> {
               children: [
                 Icon(
                   Icons.tune_rounded,
-                  color: hasActiveFilter ? AppColors.primaryDark : AppColors.secondary,
+                  color: hasActiveFilter
+                      ? AppColors.primaryDark
+                      : AppColors.secondary,
                   size: 22,
                 ),
                 if (hasActiveFilter)

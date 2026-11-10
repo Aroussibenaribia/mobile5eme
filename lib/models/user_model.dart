@@ -1,6 +1,7 @@
 enum UserRole {
   client,
-  professional;
+  professional,
+  admin;
 
   String get label {
     switch (this) {
@@ -8,10 +9,13 @@ enum UserRole {
         return 'Client';
       case UserRole.professional:
         return 'Professionnel';
+      case UserRole.admin:
+        return 'Administrateur';
     }
   }
 
   static UserRole fromString(String? role) {
+    if (role == 'admin') return UserRole.admin;
     if (role == 'professional' || role == 'pro') {
       return UserRole.professional;
     }
@@ -29,6 +33,7 @@ class UserModel {
   final String city;
   final String address;
   final DateTime createdAt;
+  final bool isActive;
 
   const UserModel({
     required this.id,
@@ -40,7 +45,10 @@ class UserModel {
     this.city = 'Tunis',
     this.address = '',
     required this.createdAt,
+    this.isActive = true,
   });
+
+  bool get isAdmin => role == UserRole.admin;
 
   bool get isProfessional => role == UserRole.professional;
 
@@ -65,6 +73,7 @@ class UserModel {
       city: city ?? this.city,
       address: address ?? this.address,
       createdAt: createdAt ?? this.createdAt,
+      isActive: isActive,
     );
   }
 
@@ -79,12 +88,14 @@ class UserModel {
       'city': city,
       'address': address,
       'createdAt': createdAt.toIso8601String(),
+      'isActive': isActive ? 1 : 0,
     };
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map, [String? docId]) {
     return UserModel(
       id: docId ?? map['id'] ?? '',
+      isActive: map['isActive'] != 0 && map['isActive'] != false,
       email: map['email'] ?? '',
       fullName: map['fullName'] ?? '',
       phone: map['phone'] ?? '',

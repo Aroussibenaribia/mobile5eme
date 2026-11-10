@@ -46,3 +46,20 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local app data, environment files, and signing material
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.apk
+*.aab
+*.jks
+*.keystore
+key.properties
+.env
+.env.*
+!.env.example

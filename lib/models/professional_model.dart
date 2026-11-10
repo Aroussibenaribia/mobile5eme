@@ -1,34 +1,7 @@
-class ProServiceItem {
-  final String title;
-  final String description;
-  final double price;
-  final String duration;
+import 'service_model.dart';
+export 'service_model.dart';
 
-  const ProServiceItem({
-    required this.title,
-    required this.description,
-    required this.price,
-    this.duration = '1h - 2h',
-  });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'title': title,
-      'description': description,
-      'price': price,
-      'duration': duration,
-    };
-  }
-
-  factory ProServiceItem.fromMap(Map<String, dynamic> map) {
-    return ProServiceItem(
-      title: map['title'] ?? '',
-      description: map['description'] ?? '',
-      price: (map['price'] as num?)?.toDouble() ?? 0.0,
-      duration: map['duration'] ?? '1h',
-    );
-  }
-}
+typedef ProServiceItem = ServiceModel;
 
 class ProfessionalModel {
   final String id;
@@ -159,8 +132,14 @@ class ProfessionalModel {
       reviewCount: (map['reviewCount'] as num?)?.toInt() ?? 0,
       isVerified: map['isVerified'] ?? false,
       isAvailable: map['isAvailable'] ?? true,
-      skills: (map['skills'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      availableDays: (map['availableDays'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      skills: (map['skills'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      availableDays: (map['availableDays'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       services: (map['services'] as List<dynamic>?)
               ?.map((s) => ProServiceItem.fromMap(Map<String, dynamic>.from(s)))
               .toList() ??

@@ -20,7 +20,8 @@ class AcceptedSolutionBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF0FDF4), // Emerald 50
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF86EFAC), width: 1.5), // Emerald 300
+        border: Border.all(
+            color: const Color(0xFF86EFAC), width: 1.5), // Emerald 300
         boxShadow: [
           BoxShadow(
             color: AppColors.success.withValues(alpha: 0.08),
@@ -35,7 +36,8 @@ class AcceptedSolutionBanner extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: AppColors.success,
                   borderRadius: BorderRadius.circular(12),
@@ -43,7 +45,8 @@ class AcceptedSolutionBanner extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
+                    Icon(Icons.check_circle_rounded,
+                        color: Colors.white, size: 14),
                     SizedBox(width: 4),
                     Text(
                       'Solution Validée par l\'auteur',
@@ -67,7 +70,8 @@ class AcceptedSolutionBanner extends StatelessWidget {
                 name: comment.authorName,
                 imageUrl: comment.authorAvatar,
                 radius: 18,
-                showVerifiedBadge: comment.authorRole.toLowerCase().contains('artisan'),
+                showVerifiedBadge:
+                    comment.authorRole.toLowerCase().contains('artisan'),
               ),
               const SizedBox(width: 10),
               Column(
@@ -84,7 +88,8 @@ class AcceptedSolutionBanner extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 1.5),
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight,
                           borderRadius: BorderRadius.circular(6),
@@ -101,7 +106,8 @@ class AcceptedSolutionBanner extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         '• ${RelativeTimeFormatter.format(comment.createdAt)}',
-                        style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textMuted),
                       ),
                     ],
                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:mobile5eme/services/auth_service.dart';
 import 'package:mobile5eme/services/professional_service.dart';
 
@@ -16,7 +17,11 @@ void main() {
     });
 
     test('Logout clears current user', () async {
+      final initialFactory = databaseFactoryOrNull;
       await authService.logout();
+      expect(databaseFactoryOrNull, same(initialFactory),
+          reason:
+              'Opening HomeFix must not replace the global SQLite factory.');
       expect(authService.isAuthenticated, isFalse);
       expect(authService.currentUser, isNull);
     });
@@ -29,7 +34,7 @@ void main() {
       proService = ProfessionalService();
     });
 
-    test('Initial list is empty before Firestore data stream emits', () {
+    test('Initial list is empty before SQLite loading completes', () {
       expect(proService.allProfessionals, isEmpty);
       expect(proService.filteredProfessionals, isEmpty);
     });

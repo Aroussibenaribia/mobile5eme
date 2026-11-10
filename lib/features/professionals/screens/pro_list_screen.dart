@@ -1,210 +1,125 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/editorial_widgets.dart';
+import '../../../core/widgets/feature_widgets.dart';
+import '../../../models/service_category_model.dart';
 import '../../../services/professional_service.dart';
 import '../widgets/pro_card.dart';
 
 class ProListScreen extends StatefulWidget {
   final String? initialCategory;
-
-  const ProListScreen({
-    super.key,
-    this.initialCategory,
-  });
-
+  const ProListScreen({super.key, this.initialCategory});
   @override
   State<ProListScreen> createState() => _ProListScreenState();
 }
 
 class _ProListScreenState extends State<ProListScreen> {
-  final TextEditingController _searchController = TextEditingController();
-
-  final List<String> _categories = [
-    'Tous',
-    'Plomberie',
-    'Électricité',
-    'Climatisation',
-    'Nettoyage',
-    'Peinture',
-    'Informatique',
-  ];
-
+  final _search = TextEditingController();
   @override
   void initState() {
     super.initState();
+    final source = context.read<ProfessionalService>();
+    _search.text = source.searchQuery;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.initialCategory != null) {
-        context.read<ProfessionalService>().setCategory(widget.initialCategory!);
-      }
-      context.read<ProfessionalService>().fetchFromFirestore();
+      if (!mounted) return;
+      source.setCategory(widget.initialCategory ?? 'Tous');
     });
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _search.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final proService = context.watch<ProfessionalService>();
-    final pros = proService.filteredProfessionals;
-
+    final source = context.watch<ProfessionalService>();
+    final pros = source.filteredProfessionals;
+    final categories = [
+      'Tous',
+      ...ServiceCategoryModel.defaultCategories.map((c) => c.title)
+    ];
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Professionnels certifiés'),
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Search & Filter Box
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (val) => proService.setSearchQuery(val),
-              decoration: InputDecoration(
-                hintText: 'Rechercher un plombier, électricien, ville...',
-                prefixIcon: const Icon(Icons.search, color: AppColors.primary),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
-                        onPressed: () {
-                          _searchController.clear();
-                          proService.setSearchQuery('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: AppColors.surfaceMuted,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-          ),
-
-          // Categories Filter Bar
-          Container(
-            color: Colors.white,
-            height: 52,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final cat = _categories[index];
-                final isSelected = proService.selectedCategory.toLowerCase() == cat.toLowerCase();
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: FilterChip(
-                    label: Text(cat),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      proService.setCategory(cat);
-                    },
-                    selectedColor: AppColors.primary,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 13,
-                    ),
-                    backgroundColor: AppColors.surfaceMuted,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(
-                        color: isSelected ? AppColors.primary : AppColors.cardBorder,
-                      ),
-                    ),
-                    showCheckmark: false,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Results Header Counter
+        appBar: AppBar(title: const Text('Les artisans')),
+        body: ContentWidth(
+            child: Column(children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${pros.length} professionnel(s) disponible(s)',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Row(
-                  children: const [
-                    Icon(Icons.verified, size: 14, color: AppColors.primary),
-                    SizedBox(width: 4),
-                    Text(
-                      '100% Vérifiés',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
+              padding: const EdgeInsets.fromLTRB(22, 12, 22, 16),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Le bon savoir-faire,\nau bon endroit.',
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 20),
+                    TextField(
+                        controller: _search,
+                        onChanged: source.setSearchQuery,
+                        textInputAction: TextInputAction.search,
+                        onTapOutside: (_) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
+                        decoration: InputDecoration(
+                            hintText: 'Métier, prestation ou ville',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _search.text.isEmpty
+                                ? null
+                                : IconButton(
+                                    tooltip: 'Effacer la recherche',
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: () {
+                                      _search.clear();
+                                      source.setSearchQuery('');
+                                    }))),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                        initialValue:
+                            categories.contains(source.selectedCategory)
+                                ? source.selectedCategory
+                                : 'Tous',
+                        key: ValueKey(source.selectedCategory),
+                        decoration: const InputDecoration(labelText: 'Métier'),
+                        items: categories
+                            .map((c) =>
+                                DropdownMenuItem(value: c, child: Text(c)))
+                            .toList(),
+                        onChanged: (v) {
+                          if (v != null) source.setCategory(v);
+                        }),
+                    const SizedBox(height: 16),
+                    Text('${pros.length} artisan(s) · tarifs par prestation',
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12)),
+                  ])),
+          if (source.isLoading) const LinearProgressIndicator(),
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: () => proService.fetchFromFirestore(),
-              child: pros.isEmpty
-                  ? SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Container(
-                        height: 300,
-                        alignment: Alignment.center,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.search_off_rounded, size: 64, color: AppColors.textMuted),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Aucun professionnel trouvé',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Essayez d\'ajuster vos filtres de recherche.',
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
-                      itemCount: pros.length,
-                      itemBuilder: (context, index) {
-                        return ProCard(professional: pros[index]);
-                      },
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
+              child: source.errorMessage != null
+                  ? FeatureEmpty(
+                      title: source.errorMessage!,
+                      action: TextButton(
+                          onPressed: source.loadProfessionals,
+                          child: const Text('Réessayer')))
+                  : pros.isEmpty
+                      ? FeatureEmpty(
+                          title: 'Aucun artisan trouvé',
+                          description:
+                              'Essayez un autre métier ou une autre ville.',
+                          action: TextButton(
+                              onPressed: () {
+                                _search.clear();
+                                source.setSearchQuery('');
+                                source.setCategory('Tous');
+                              },
+                              child: const Text('Réinitialiser la recherche')))
+                      : RefreshIndicator(
+                          onRefresh: source.loadProfessionals,
+                          child: ListView.builder(
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              padding: const EdgeInsets.fromLTRB(22, 0, 22, 24),
+                              itemCount: pros.length,
+                              itemBuilder: (_, i) =>
+                                  ProCard(professional: pros[i])))),
+        ])));
   }
 }

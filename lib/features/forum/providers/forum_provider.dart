@@ -99,7 +99,8 @@ class ForumProvider extends ChangeNotifier {
     String? imageUrl,
   }) async {
     // Vérification Cooldown 30s
-    final remainingCooldown = ContentModerator.checkRateLimitSecondsRemaining(authorId);
+    final remainingCooldown =
+        ContentModerator.checkRateLimitSecondsRemaining(authorId);
     if (remainingCooldown > 0) {
       return 'Veuillez patienter $remainingCooldown secondes avant de publier à nouveau.';
     }
@@ -143,7 +144,8 @@ class ForumProvider extends ChangeNotifier {
   Future<String?> updatePost(ForumPostModel post) async {
     try {
       final sanitizedTitle = ContentModerator.sanitizeText(post.title.trim());
-      final sanitizedContent = ContentModerator.sanitizeText(post.content.trim());
+      final sanitizedContent =
+          ContentModerator.sanitizeText(post.content.trim());
       final updated = post.copyWith(
         title: sanitizedTitle,
         content: sanitizedContent,
@@ -225,7 +227,8 @@ class ForumProvider extends ChangeNotifier {
     required String content,
   }) async {
     // Vérification Cooldown 30s
-    final remainingCooldown = ContentModerator.checkRateLimitSecondsRemaining(authorId);
+    final remainingCooldown =
+        ContentModerator.checkRateLimitSecondsRemaining(authorId);
     if (remainingCooldown > 0) {
       return 'Veuillez patienter $remainingCooldown secondes avant de répondre à nouveau.';
     }
@@ -338,7 +341,8 @@ class ForumProvider extends ChangeNotifier {
   }
 
   /// Charger les statistiques de l'utilisateur (Métier 6)
-  Future<void> loadUserStats(String userId, {String userRole = 'client'}) async {
+  Future<void> loadUserStats(String userId,
+      {String userRole = 'client'}) async {
     try {
       _userStats = await _repository.getUserStats(userId, userRole: userRole);
       notifyListeners();

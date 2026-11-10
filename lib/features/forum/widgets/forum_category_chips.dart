@@ -72,7 +72,8 @@ class ForumCategoryChips extends StatelessWidget {
                     cat.name,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
                       color: isSelected ? Colors.white : AppColors.textPrimary,
                     ),
                   ),

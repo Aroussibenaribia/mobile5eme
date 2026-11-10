@@ -1,551 +1,341 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/editorial_widgets.dart';
+import '../../../core/widgets/feature_widgets.dart';
 import '../../../core/widgets/pro_avatar.dart';
 import '../../../models/service_category_model.dart';
+import '../../../models/booking_model.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/homefix_data.dart';
 import '../../../services/professional_service.dart';
 import '../../professionals/screens/pro_list_screen.dart';
 import '../../professionals/widgets/pro_card.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../forum/screens/forum_feed_screen.dart';
+import '../../services/screens/services_screen.dart';
+import '../../search_and_booking/screens/booking_screens.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
+  void _open(BuildContext context, Widget page) =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => page));
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthService>();
-    final proService = context.watch<ProfessionalService>();
-    final user = auth.currentUser;
-    final topPros = proService.topRatedProfessionals;
-    final allPros = proService.allProfessionals;
-    final categories = ServiceCategoryModel.defaultCategories;
-
+    final user = context.watch<AuthService>().currentUser;
+    final source = context.watch<ProfessionalService>();
+    final data = context.watch<HomeFixData>();
+    final professional = user?.isProfessional == true;
+    final pending =
+        data.bookings.where((b) => b.status == BookingStatus.pending).length;
+    final upcoming = data.bookings
+        .where((b) =>
+            [
+              BookingStatus.pending,
+              BookingStatus.confirmed,
+              BookingStatus.inProgress
+            ].contains(b.status) &&
+            b.scheduledDate.isAfter(DateUtils.dateOnly(DateTime.now())))
+        .toList()
+      ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await proService.fetchFromFirestore();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top App Bar / Location & Profile Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                            );
-                          },
-                          child: ProAvatar(
-                            name: user?.fullName ?? 'Invité',
-                            imageUrl: user?.avatarUrl,
-                            radius: 22,
-                            showVerifiedBadge: user != null,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  user != null ? 'Bonjour, ${user.fullName.split(' ').first} 👋' : 'Bienvenue sur HomeFix',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on, size: 13, color: AppColors.primary),
-                                const SizedBox(width: 2),
-                                Text(
-                                  user?.city ?? 'Tunis, Tunisie',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.forum_rounded, size: 20, color: AppColors.primaryDark),
-                            tooltip: 'Forum & Entraide',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const ForumFeedScreen()),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.cardBorder),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.notifications_none_rounded, size: 22, color: AppColors.textPrimary),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Notifications (Module Membre 3)'),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // Search Bar Trigger
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProListScreen()),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.cardBorder),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.search, color: AppColors.primary, size: 22),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Quel service recherchez-vous aujourd\'hui ?',
-                            style: TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        Icon(Icons.tune_rounded, color: AppColors.textSecondary, size: 20),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Hero Promo Banner
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.secondary, Color(0xFF0F766E)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
-                        blurRadius: 14,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.bolt, color: AppColors.accent, size: 14),
-                            SizedBox(width: 4),
-                            Text(
-                              'Intervention en moins de 2h',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Dépannage d\'urgence\nà votre domicile',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Fuite d\'eau, panne d\'électricité ou clim en panne ? Nos artisans certifiés interviennent 7j/7.',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ProListScreen()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.secondary,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text(
-                          'Trouver un artisan',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Categories Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Catégories de services',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ProListScreen()),
-                        );
-                      },
-                      child: const Text(
-                        'Voir tout',
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                // Categories Grid (6 services as requested)
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: categories.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 0.95,
-                  ),
-                  itemBuilder: (context, index) {
-                    final cat = categories[index];
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProListScreen(initialCategory: cat.title),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.cardBorder),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: cat.color.withValues(alpha: 0.12),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(cat.icon, color: cat.color, size: 22),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              cat.title,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${cat.professionalCount} pros',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                // Community Forum Banner
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ForumFeedScreen()),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(18),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.06),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(Icons.forum_rounded, color: AppColors.primaryDark, size: 28),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                'Forum & Entraide Dépannage',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              SizedBox(height: 3),
-                              Text(
-                                'Posez vos questions et recevez des conseils de nos artisans.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const ForumFeedScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Entrer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // Top Rated Professionals Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: const [
-                        Text(
-                          'Artisans les mieux notés',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        SizedBox(width: 6),
-                        Icon(Icons.star_rounded, color: AppColors.accent, size: 20),
-                      ],
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ProListScreen()),
-                        );
-                      },
-                      child: Text(
-                        'Tous (${allPros.length})',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Horizontal Carousel of Top Pros
-                SizedBox(
-                  height: 160,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: topPros.length,
-                    itemBuilder: (context, index) {
-                      return ProCard(
-                        professional: topPros[index],
-                        compact: true,
-                      );
+        body: SafeArea(
+            child: ContentWidth(
+                child: RefreshIndicator(
+                    onRefresh: () async {
+                      await source.loadProfessionals();
+                      await data.refresh();
                     },
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // Verified Professionals Available Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Professionnels recommandés',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ProListScreen()),
-                        );
-                      },
-                      child: const Text(
-                        'Voir la liste',
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // List of ProCards
-                ...allPros.take(3).map((pro) => ProCard(professional: pro)),
-
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+                    child: ListView(
+                        padding: const EdgeInsets.fromLTRB(22, 18, 22, 28),
+                        children: [
+                          Row(children: [
+                            const CraftMark(size: 36),
+                            const SizedBox(width: 10),
+                            const Text('HomeFix',
+                                style: TextStyle(
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -.7)),
+                            const Spacer(),
+                            IconButton(
+                                tooltip: 'Mon profil',
+                                onPressed: () =>
+                                    _open(context, const ProfileScreen()),
+                                icon: ProAvatar(
+                                    name: user?.fullName ?? 'Invité',
+                                    imageUrl: user?.avatarUrl,
+                                    radius: 19)),
+                          ]),
+                          const SizedBox(height: 28),
+                          PageIntro(
+                              eyebrow: professional
+                                  ? 'Votre espace professionnel'
+                                  : 'Services à domicile · ${user?.city ?? 'Tunisie'}',
+                              title: professional
+                                  ? 'Bonjour,\n${user!.fullName.split(' ').first}.'
+                                  : 'Un projet\nà la maison ?',
+                              description: professional
+                                  ? 'Gardez le fil de vos interventions et de votre activité.'
+                                  : 'Trouvez le bon savoir-faire. Choisissez une prestation, puis votre rendez-vous.'),
+                          if (professional) ...[
+                            Row(children: [
+                              Expanded(
+                                  child: _Metric(
+                                      value: '$pending',
+                                      label: 'Demandes à confirmer')),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                  child: _Metric(
+                                      value:
+                                          '${data.services.where((s) => s.isActive).length}',
+                                      label: 'Prestations publiées')),
+                            ]),
+                            const SizedBox(height: 16),
+                            FilledButton.icon(
+                                onPressed: () =>
+                                    _open(context, const ServiceEditorScreen()),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Ajouter une prestation')),
+                            const SizedBox(height: 8),
+                            OutlinedButton.icon(
+                                onPressed: () =>
+                                    _open(context, const ServicesScreen()),
+                                icon: const Icon(Icons.handyman_outlined),
+                                label: const Text('Gérer mon catalogue')),
+                          ] else ...[
+                            Material(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () =>
+                                        _open(context, const ProListScreen()),
+                                    child: const Padding(
+                                        padding: EdgeInsets.all(18),
+                                        child: Row(children: [
+                                          Icon(Icons.search,
+                                              color: AppColors.primary),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                              child: Text(
+                                                  'Un métier, une prestation, une ville…',
+                                                  style:
+                                                      TextStyle(fontSize: 13))),
+                                          Icon(Icons.arrow_forward,
+                                              size: 18,
+                                              color: AppColors.primary),
+                                        ])))),
+                            const SectionHeading(
+                                'De quel métier avez-vous besoin ?'),
+                            LayoutBuilder(builder: (context, constraints) {
+                              final columns =
+                                  constraints.maxWidth >= 600 ? 3 : 2;
+                              return Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  children: [
+                                    for (final category in ServiceCategoryModel
+                                        .defaultCategories)
+                                      SizedBox(
+                                          width: (constraints.maxWidth -
+                                                  (columns - 1) * 10) /
+                                              columns,
+                                          child: Material(
+                                              color: AppColors.surface,
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              child: InkWell(
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                  onTap: () => _open(
+                                                      context,
+                                                      ProListScreen(
+                                                          initialCategory:
+                                                              category.title)),
+                                                  child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              14),
+                                                      child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Icon(category.icon,
+                                                                color: AppColors
+                                                                    .primary,
+                                                                size: 25),
+                                                            const SizedBox(
+                                                                height: 16),
+                                                            Text(category.title,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        13,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w700)),
+                                                            const SizedBox(
+                                                                height: 3),
+                                                            Text(
+                                                                '${source.allProfessionals.where((p) => p.specialty == category.title).length} artisan(s)',
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        11,
+                                                                    color: AppColors
+                                                                        .textMuted)),
+                                                          ]))))),
+                                  ]);
+                            }),
+                          ],
+                          if (user != null) ...[
+                            SectionHeading('À votre agenda',
+                                action: TextButton(
+                                    onPressed: () => _open(
+                                        context, const BookingListScreen()),
+                                    child: const Text('Tout voir'))),
+                            if (upcoming.isEmpty)
+                              FeatureCard(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                    const Icon(Icons.calendar_month_outlined,
+                                        color: AppColors.primary),
+                                    const SizedBox(height: 12),
+                                    Text('Un peu de place dans votre agenda.',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium),
+                                    const SizedBox(height: 6),
+                                    Text(professional
+                                        ? 'Les nouvelles demandes apparaîtront ici.'
+                                        : 'Vos prochains rendez-vous apparaîtront ici.'),
+                                  ]))
+                            else
+                              Material(
+                                  color: AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: InkWell(
+                                      borderRadius: BorderRadius.circular(16),
+                                      onTap: () => _open(
+                                          context,
+                                          BookingDetailScreen(
+                                              id: upcoming.first.id)),
+                                      child: Padding(
+                                          padding: const EdgeInsets.all(20),
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                    DateFormat('dd/MM · HH:mm')
+                                                        .format(upcoming.first
+                                                            .scheduledDate),
+                                                    style: const TextStyle(
+                                                        color: AppColors
+                                                            .primaryDark,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                    upcoming.first.serviceTitle,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleLarge),
+                                                const SizedBox(height: 6),
+                                                Text(professional
+                                                    ? upcoming.first.clientName
+                                                    : upcoming.first.proName),
+                                                const SizedBox(height: 14),
+                                                Row(children: [
+                                                  Expanded(
+                                                      child: Text(upcoming
+                                                          .first.status.label)),
+                                                  const Icon(
+                                                      Icons.arrow_forward,
+                                                      size: 19)
+                                                ]),
+                                              ])))),
+                          ],
+                          if (!professional) ...[
+                            SectionHeading('Les artisans HomeFix',
+                                action: TextButton(
+                                    onPressed: () =>
+                                        _open(context, const ProListScreen()),
+                                    child: const Text('Explorer'))),
+                            if (source.isLoading)
+                              const LinearProgressIndicator()
+                            else if (source.errorMessage != null)
+                              FeatureEmpty(
+                                  title: source.errorMessage!,
+                                  action: TextButton(
+                                      onPressed: source.loadProfessionals,
+                                      child: const Text('Réessayer')))
+                            else if (source.allProfessionals.isEmpty)
+                              const FeatureCard(
+                                  child: Text(
+                                      'Aucun artisan ne propose de prestation pour le moment.'))
+                            else
+                              ...source.allProfessionals
+                                  .take(3)
+                                  .map((p) => ProCard(professional: p)),
+                          ],
+                          const SizedBox(height: 24),
+                          Material(
+                              color: AppColors.secondary,
+                              borderRadius: BorderRadius.circular(18),
+                              child: InkWell(
+                                  borderRadius: BorderRadius.circular(18),
+                                  onTap: () =>
+                                      _open(context, const ForumFeedScreen()),
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(22),
+                                      child: Row(children: [
+                                        const Icon(Icons.forum_outlined,
+                                            color: Colors.white, size: 28),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                            child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                              const Text(
+                                                  'Un conseil entre deux travaux ?',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      fontSize: 15)),
+                                              const SizedBox(height: 7),
+                                              Text(
+                                                  'Posez votre question à la communauté.',
+                                                  style: TextStyle(
+                                                      color: Colors.white
+                                                          .withValues(
+                                                              alpha: .7),
+                                                      fontSize: 12)),
+                                            ])),
+                                        const SizedBox(width: 8),
+                                        const Icon(Icons.arrow_forward,
+                                            color: Colors.white, size: 20),
+                                      ])))),
+                        ])))));
   }
+}
+
+class _Metric extends StatelessWidget {
+  final String value, label;
+  const _Metric({required this.value, required this.label});
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+          color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(value, style: Theme.of(context).textTheme.headlineLarge),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ]));
 }

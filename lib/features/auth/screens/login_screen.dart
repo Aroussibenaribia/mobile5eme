@@ -1,270 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/editorial_widgets.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../services/auth_service.dart';
+import '../widgets/demo_accounts_card.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _rememberMe = true;
-
+  final _form = GlobalKey<FormState>();
+  final _email = TextEditingController(), _password = TextEditingController();
+  bool _remember = true;
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final authService = context.read<AuthService>();
-    final success = await authService.login(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
-
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Bienvenue, ${authService.currentUser?.fullName} !'),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else if (mounted && authService.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authService.errorMessage!),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+  Future<void> _login() async {
+    if (!_form.currentState!.validate()) return;
+    final ok = await context.read<AuthService>().login(
+        email: _email.text, password: _password.text, rememberMe: _remember);
+    if (ok && mounted) Navigator.of(context).popUntil((r) => r.isFirst);
   }
-
 
   @override
   Widget build(BuildContext context) {
-    final authService = context.watch<AuthService>();
-
+    final auth = context.watch<AuthService>();
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Logo & Branding
-                Center(
-                  child: Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Icon(
-                      Icons.home_repair_service_rounded,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Center(
-                  child: Text(
-                    'HomeFix',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const Center(
-                  child: Text(
-                    'Plateforme de services à domicile',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                const Text(
-                  'Connexion',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Accédez à votre espace pour réserver ou gérer vos interventions.',
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                ),
-
-                const SizedBox(height: 24),
-
-                CustomTextField(
-                  label: 'Adresse e-mail',
-                  hint: 'nom@exemple.com',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icons.email_outlined,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Veuillez saisir votre adresse e-mail';
-                    }
-                    if (!val.contains('@') || !val.contains('.')) {
-                      return 'Adresse e-mail non valide';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                CustomTextField(
-                  label: 'Mot de passe',
-                  hint: '••••••••',
-                  controller: _passwordController,
-                  isPassword: true,
-                  prefixIcon: Icons.lock_outline,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Veuillez saisir votre mot de passe';
-                    }
-                    if (val.length < 6) {
-                      return 'Au moins 6 caractères requis';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: Checkbox(
-                            value: _rememberMe,
-                            activeColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            onChanged: (v) {
-                              setState(() {
-                                _rememberMe = v ?? true;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Se souvenir de moi',
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ForgotPasswordScreen(),
-                          ),
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                      ),
-                      child: const Text(
-                        'Mot de passe oublié ?',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                CustomButton(
-                  text: 'Se connecter',
-                  isLoading: authService.isLoading,
-                  onPressed: _handleLogin,
-                ),
-
-                const SizedBox(height: 28),
-
-                // Register Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Vous n\'avez pas encore de compte ? ',
-                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const RegisterScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'S\'inscrire',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+        appBar: AppBar(),
+        body: ContentWidth(
+            maxWidth: 500,
+            child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                child: Form(
+                    key: _form,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Row(children: [
+                            CraftMark(),
+                            SizedBox(width: 12),
+                            Text('HomeFix',
+                                style: TextStyle(
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -.8))
+                          ]),
+                          const SizedBox(height: 36),
+                          const PageIntro(
+                              title: 'Ravi de\nvous retrouver.',
+                              description:
+                                  'Votre maison, vos artisans, vos rendez-vous.'),
+                          AutofillGroup(
+                              child: Column(children: [
+                            CustomTextField(
+                                label: 'Adresse e-mail',
+                                controller: _email,
+                                keyboardType: TextInputType.emailAddress,
+                                prefixIcon: Icons.alternate_email,
+                                validator: (v) => (v?.contains('@') ?? false)
+                                    ? null
+                                    : 'Indiquez votre adresse e-mail.'),
+                            const SizedBox(height: 18),
+                            CustomTextField(
+                                label: 'Mot de passe',
+                                controller: _password,
+                                isPassword: true,
+                                prefixIcon: Icons.lock_outline,
+                                validator: (v) => (v?.isNotEmpty ?? false)
+                                    ? null
+                                    : 'Indiquez votre mot de passe.'),
+                          ])),
+                          const SizedBox(height: 12),
+                          CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              title: const Text('Se souvenir de moi',
+                                  style: TextStyle(fontSize: 13)),
+                              value: _remember,
+                              onChanged: (v) =>
+                                  setState(() => _remember = v ?? true)),
+                          if (auth.errorMessage != null)
+                            Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: Text(auth.errorMessage!,
+                                    style: const TextStyle(
+                                        color: AppColors.error))),
+                          CustomButton(
+                              text: 'Se connecter',
+                              isLoading: auth.isLoading,
+                              onPressed: _login),
+                          TextButton(
+                              onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ForgotPasswordScreen())),
+                              child: const Text('Mot de passe oublié ?')),
+                          const Divider(height: 32),
+                          const DemoAccountsCard(),
+                          const SizedBox(height: 20),
+                          TextButton(
+                              onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const RegisterScreen())),
+                              child:
+                                  const Text('Nouveau ici ? Créer un compte')),
+                        ])))));
   }
 }

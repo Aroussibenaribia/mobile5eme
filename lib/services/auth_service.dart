@@ -1,351 +1,135 @@
 import 'package:flutter/foundation.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/data/homefix_repository.dart';
 import '../models/user_model.dart';
-import '../models/professional_model.dart';
 
 class AuthService extends ChangeNotifier {
-  bool get isFirebaseAvailable {
-    try {
-      return Firebase.apps.isNotEmpty;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  FirebaseAuth? get _auth => isFirebaseAvailable ? FirebaseAuth.instance : null;
-  FirebaseFirestore? get _firestore =>
-      isFirebaseAvailable ? FirebaseFirestore.instance : null;
-
+  final HomeFixRepository repository;
   UserModel? _currentUser;
-  bool _isLoading = false;
+  bool _isLoading = false, _disposed = false;
   String? _errorMessage;
-
   UserModel? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-
-  AuthService() {
-    _initAuthState();
+  AuthService({HomeFixRepository? repository, bool restoreSession = false})
+      : repository = repository ?? HomeFixRepository() {
+    if (restoreSession) _restore();
+  }
+  void _emit() {
+    if (!_disposed) notifyListeners();
   }
 
-  void _initAuthState() {
-    if (!isFirebaseAvailable || _auth == null) return;
+  Future<void> _restore() async {
     try {
-      final firebaseUser = _auth?.currentUser;
-      if (firebaseUser != null) {
-        _fetchUserFromFirestore(firebaseUser.uid);
-      }
-    } catch (_) {}
-  }
-
-  Future<void> _fetchUserFromFirestore(String uid) async {
-    if (!isFirebaseAvailable || _firestore == null) return;
-    try {
-      final doc = await _firestore!.collection('users').doc(uid).get();
-      if (doc.exists && doc.data() != null) {
-        _currentUser = UserModel.fromMap(doc.data()!, doc.id);
-        notifyListeners();
-      }
-    } catch (e) {
-      debugPrint('Firestore fetch error: $e');
+      _currentUser = await repository.restoreSession();
+    } catch (_) {
+      _errorMessage = 'Impossible de restaurer la session.';
     }
+    _emit();
   }
 
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> _authenticate(Future<UserModel> Function() action) async {
+    if (_isLoading) return false;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
-
-    if (!isFirebaseAvailable || _auth == null) {
-      _isLoading = false;
-      _errorMessage = 'Connexion Firebase non disponible. Vérifiez votre connexion internet.';
-      notifyListeners();
-      return false;
-    }
-
-    final cleanEmail = email.trim().toLowerCase();
-
+    _emit();
     try {
-      final cred = await _auth!.signInWithEmailAndPassword(
-        email: cleanEmail,
-        password: password,
-      );
-
-      final uid = cred.user!.uid;
-
-      if (_firestore != null) {
-        final doc = await _firestore!.collection('users').doc(uid).get();
-        if (doc.exists && doc.data() != null) {
-          _currentUser = UserModel.fromMap(doc.data()!, uid);
-        } else {
-          _currentUser = UserModel(
-            id: uid,
-            email: cleanEmail,
-            fullName: cred.user?.displayName ?? cleanEmail.split('@').first,
-            role: UserRole.client,
-            createdAt: DateTime.now(),
-          );
-        }
-      }
-
-      _isLoading = false;
-      notifyListeners();
+      _currentUser = await action();
       return true;
-    } on FirebaseAuthException catch (e) {
-      _isLoading = false;
-      switch (e.code) {
-        case 'user-not-found':
-          _errorMessage = 'Aucun utilisateur trouvé avec cette adresse e-mail.';
-          break;
-        case 'wrong-password':
-          _errorMessage = 'Mot de passe incorrect.';
-          break;
-        case 'invalid-email':
-          _errorMessage = "Format d'adresse e-mail invalide.";
-          break;
-        case 'user-disabled':
-          _errorMessage = 'Ce compte a été suspendu.';
-          break;
-        case 'invalid-credential':
-          _errorMessage = 'Email ou mot de passe incorrect.';
-          break;
-        default:
-          _errorMessage = e.message ?? 'Échec de la connexion.';
-      }
-      notifyListeners();
-      return false;
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Erreur de connexion : $e';
-      notifyListeners();
+      _errorMessage = e is HomeFixException
+          ? e.message
+          : 'Impossible de terminer cette action. Réessayez.';
       return false;
+    } finally {
+      _isLoading = false;
+      _emit();
     }
   }
 
-  Future<bool> registerClient({
-    required String fullName,
-    required String email,
-    required String password,
-    required String phone,
-    required String city,
-  }) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    if (!isFirebaseAvailable || _auth == null) {
-      _isLoading = false;
-      _errorMessage = 'Connexion Firebase non disponible. Vérifiez votre connexion internet.';
-      notifyListeners();
-      return false;
-    }
-
-    final cleanEmail = email.trim().toLowerCase();
-
-    try {
-      final cred = await _auth!.createUserWithEmailAndPassword(
-        email: cleanEmail,
-        password: password,
-      );
-
-      final uid = cred.user!.uid;
-
-      final newUser = UserModel(
-        id: uid,
-        email: cleanEmail,
-        fullName: fullName.trim(),
-        phone: phone.trim(),
-        role: UserRole.client,
-        city: city.trim().isEmpty ? 'Tunis' : city.trim(),
-        createdAt: DateTime.now(),
-      );
-
-      if (_firestore != null) {
-        await _firestore!.collection('users').doc(uid).set(newUser.toMap());
-      }
-
-      _currentUser = newUser;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } on FirebaseAuthException catch (e) {
-      _isLoading = false;
-      if (e.code == 'email-already-in-use') {
-        _errorMessage = 'Cette adresse e-mail est déjà utilisée.';
-      } else if (e.code == 'weak-password') {
-        _errorMessage = 'Le mot de passe doit comporter au moins 6 caractères.';
-      } else {
-        _errorMessage = e.message ?? 'Échec de la création du compte.';
-      }
-      notifyListeners();
-      return false;
-    } catch (e) {
-      _isLoading = false;
-      _errorMessage = "Erreur lors de l'inscription : $e";
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> registerProfessional({
-    required String fullName,
-    required String email,
-    required String password,
-    required String phone,
-    required String city,
-    required String specialty,
-    required double hourlyRate,
-    required int experienceYears,
-    required String bio,
-  }) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    if (!isFirebaseAvailable || _auth == null) {
-      _isLoading = false;
-      _errorMessage = 'Connexion Firebase non disponible. Vérifiez votre connexion internet.';
-      notifyListeners();
-      return false;
-    }
-
-    final cleanEmail = email.trim().toLowerCase();
-
-    try {
-      final cred = await _auth!.createUserWithEmailAndPassword(
-        email: cleanEmail,
-        password: password,
-      );
-
-      final uid = cred.user!.uid;
-
-      final newUser = UserModel(
-        id: uid,
-        email: cleanEmail,
-        fullName: fullName.trim(),
-        phone: phone.trim(),
-        role: UserRole.professional,
-        city: city.trim().isEmpty ? 'Tunis' : city.trim(),
-        createdAt: DateTime.now(),
-      );
-
-      if (_firestore != null) {
-        await _firestore!.collection('users').doc(uid).set(newUser.toMap());
-
-        final proDetails = ProfessionalModel(
-          id: uid,
-          name: fullName.trim(),
-          email: cleanEmail,
-          phone: phone.trim(),
-          avatarUrl: '',
-          coverImageUrl: '',
+  Future<bool> login(
+          {required String email,
+          required String password,
+          bool rememberMe = true}) =>
+      _authenticate(
+          () => repository.login(email, password, rememberMe: rememberMe));
+  Future<bool> registerClient(
+          {required String fullName,
+          required String email,
+          required String password,
+          required String phone,
+          required String city}) =>
+      _authenticate(() => repository.register(
+          fullName: fullName,
+          email: email,
+          password: password,
+          phone: phone,
+          city: city,
+          role: UserRole.client));
+  Future<bool> registerProfessional(
+          {required String fullName,
+          required String email,
+          required String password,
+          required String phone,
+          required String city,
+          required String specialty,
+          required double hourlyRate,
+          required int experienceYears,
+          required String bio}) =>
+      _authenticate(() => repository.register(
+          fullName: fullName,
+          email: email,
+          password: password,
+          phone: phone,
+          city: city,
+          role: UserRole.professional,
           specialty: specialty,
-          bio: bio.trim(),
-          city: city.trim().isEmpty ? 'Tunis' : city.trim(),
           hourlyRate: hourlyRate,
           experienceYears: experienceYears,
-          rating: 5.0,
-          reviewCount: 0,
-          isVerified: true,
-          skills: [specialty, 'Intervention rapide', 'Devis gratuit'],
-          services: [
-            ProServiceItem(
-              title: 'Intervention standard $specialty',
-              description: 'Diagnostic et réparation initiale',
-              price: hourlyRate,
-              duration: '1h',
-            ),
-          ],
-        );
-
-        await _firestore!
-            .collection('professionals')
-            .doc(uid)
-            .set(proDetails.toMap());
-      }
-
-      _currentUser = newUser;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } on FirebaseAuthException catch (e) {
-      _isLoading = false;
-      if (e.code == 'email-already-in-use') {
-        _errorMessage = 'Cette adresse e-mail est déjà utilisée.';
-      } else if (e.code == 'weak-password') {
-        _errorMessage = 'Le mot de passe doit comporter au moins 6 caractères.';
-      } else {
-        _errorMessage = e.message ?? 'Échec de la création du compte professionnel.';
-      }
-      notifyListeners();
-      return false;
-    } catch (e) {
-      _isLoading = false;
-      _errorMessage = "Erreur lors de l'inscription pro : $e";
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<void> updateProfile({
-    required String fullName,
-    required String phone,
-    required String city,
-    required String address,
-    String? avatarUrl,
-  }) async {
-    if (_currentUser == null) return;
+          bio: bio));
+  Future<void> updateProfile(
+      {required String fullName,
+      required String phone,
+      required String city,
+      required String address,
+      String? avatarUrl,
+      String? bio,
+      List<String>? availableDays,
+      bool? isAvailable}) async {
     _isLoading = true;
-    notifyListeners();
-
-    _currentUser = _currentUser!.copyWith(
-      fullName: fullName,
-      phone: phone,
-      city: city,
-      address: address,
-      avatarUrl: avatarUrl ?? _currentUser!.avatarUrl,
-    );
-
-    if (isFirebaseAvailable && _firestore != null) {
-      try {
-        final updateData = <String, dynamic>{
-          'fullName': fullName,
-          'phone': phone,
-          'city': city,
-          'address': address,
-        };
-        if (avatarUrl != null) {
-          updateData['avatarUrl'] = avatarUrl;
-        }
-        await _firestore!
-            .collection('users')
-            .doc(_currentUser!.id)
-            .update(updateData);
-      } catch (e) {
-        debugPrint('Firestore update error: $e');
-      }
+    _errorMessage = null;
+    _emit();
+    try {
+      _currentUser = await repository.updateProfile(
+          fullName: fullName,
+          phone: phone,
+          city: city,
+          address: address,
+          avatarUrl: avatarUrl,
+          bio: bio,
+          availableDays: availableDays,
+          isAvailable: isAvailable);
+    } catch (e) {
+      _errorMessage = e is HomeFixException
+          ? e.message
+          : 'Impossible de modifier le profil.';
+      rethrow;
+    } finally {
+      _isLoading = false;
+      _emit();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> logout() async {
-    _isLoading = true;
-    notifyListeners();
-    if (isFirebaseAvailable && _auth != null) {
-      try {
-        await _auth!.signOut();
-      } catch (_) {}
-    }
+    await repository.logout();
     _currentUser = null;
-    _isLoading = false;
-    notifyListeners();
+    _errorMessage = null;
+    _emit();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

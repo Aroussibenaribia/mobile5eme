@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../services/auth_service.dart';
+import '../../services/screens/services_screen.dart';
+import '../../admin/screens/admin_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/screens/home_screen.dart';
 import '../../professionals/screens/pro_list_screen.dart';
-import '../../search_and_booking/screens/booking_screen_placeholder.dart';
-import '../../reviews_and_history/screens/reviews_history_screen_placeholder.dart';
+import '../../search_and_booking/screens/booking_screens.dart';
+import '../../reviews_and_history/screens/reclamation_screens.dart';
 import '../../profile/screens/profile_screen.dart';
 
 class MainShellScreen extends StatefulWidget {
@@ -27,25 +31,29 @@ class _MainShellScreenState extends State<MainShellScreen> {
     _currentIndex = widget.initialIndex;
   }
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    ProListScreen(),
-    BookingScreenPlaceholder(),
-    ReviewsHistoryScreenPlaceholder(),
-    ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthService>().currentUser;
+    if (user?.isAdmin == true) return const AdminScreen();
+    final screens = <Widget>[
+      const HomeScreen(),
+      user?.isProfessional == true
+          ? const ServicesScreen()
+          : const ProListScreen(),
+      const BookingListScreen(),
+      const HistoryAndReclamationsScreen(),
+      const ProfileScreen(),
+    ];
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
+          border: const Border(
+              top: BorderSide(color: AppColors.cardBorder, width: 1)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -61,28 +69,28 @@ class _MainShellScreenState extends State<MainShellScreen> {
               _currentIndex = index;
             });
           },
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home_rounded),
               label: 'Accueil',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.engineering_outlined),
-              activeIcon: Icon(Icons.engineering_rounded),
-              label: 'Artisans',
+              icon: const Icon(Icons.engineering_outlined),
+              activeIcon: const Icon(Icons.engineering_rounded),
+              label: user?.isProfessional == true ? 'Prestations' : 'Artisans',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.calendar_month_outlined),
               activeIcon: Icon(Icons.calendar_month_rounded),
               label: 'Réservations',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long_rounded),
               label: 'Historique',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person_rounded),
               label: 'Profil',

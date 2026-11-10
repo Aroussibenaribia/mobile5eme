@@ -10,13 +10,13 @@ enum BookingStatus {
       case BookingStatus.pending:
         return 'En attente';
       case BookingStatus.confirmed:
-        return 'Confirmée';
+        return 'ConfirmÃ©e';
       case BookingStatus.inProgress:
         return 'En cours';
       case BookingStatus.completed:
-        return 'Terminée';
+        return 'TerminÃ©e';
       case BookingStatus.cancelled:
-        return 'Annulée';
+        return 'AnnulÃ©e';
     }
   }
 }
@@ -29,6 +29,9 @@ class BookingModel {
   final String proName;
   final String proSpecialty;
   final String serviceTitle;
+  final String serviceId;
+  final int durationMinutes;
+  final DateTime? createdAt;
   final DateTime scheduledDate;
   final String timeSlot;
   final String address;
@@ -44,6 +47,9 @@ class BookingModel {
     required this.proName,
     required this.proSpecialty,
     required this.serviceTitle,
+    this.serviceId = '',
+    this.durationMinutes = 60,
+    this.createdAt,
     required this.scheduledDate,
     required this.timeSlot,
     required this.address,
@@ -61,6 +67,9 @@ class BookingModel {
       'proName': proName,
       'proSpecialty': proSpecialty,
       'serviceTitle': serviceTitle,
+      'serviceId': serviceId,
+      'durationMinutes': durationMinutes,
+      'createdAt': createdAt?.toIso8601String(),
       'scheduledDate': scheduledDate.toIso8601String(),
       'timeSlot': timeSlot,
       'address': address,
@@ -79,7 +88,11 @@ class BookingModel {
       proName: map['proName'] ?? '',
       proSpecialty: map['proSpecialty'] ?? '',
       serviceTitle: map['serviceTitle'] ?? '',
-      scheduledDate: DateTime.tryParse(map['scheduledDate'] ?? '') ?? DateTime.now(),
+      serviceId: map['serviceId'] ?? '',
+      durationMinutes: (map['durationMinutes'] as num?)?.toInt() ?? 60,
+      createdAt: DateTime.tryParse(map['createdAt'] ?? ''),
+      scheduledDate:
+          DateTime.tryParse(map['scheduledDate'] ?? '') ?? DateTime.now(),
       timeSlot: map['timeSlot'] ?? '',
       address: map['address'] ?? '',
       estimatedPrice: (map['estimatedPrice'] as num?)?.toDouble() ?? 0.0,

@@ -10,7 +10,8 @@ class DeleteConfirmDialog extends StatelessWidget {
   const DeleteConfirmDialog({
     super.key,
     this.title = 'Confirmer la suppression',
-    this.message = 'Cette action est irréversible. Voulez-vous vraiment continuer ?',
+    this.message =
+        'Cette action est irréversible. Voulez-vous vraiment continuer ?',
     this.confirmText = 'Supprimer',
     required this.onConfirm,
   });
@@ -25,7 +26,8 @@ class DeleteConfirmDialog extends StatelessWidget {
       context: context,
       builder: (ctx) => DeleteConfirmDialog(
         title: title ?? 'Confirmer la suppression',
-        message: message ?? 'Cette action est irréversible. Voulez-vous vraiment continuer ?',
+        message: message ??
+            'Cette action est irréversible. Voulez-vous vraiment continuer ?',
         confirmText: confirmText ?? 'Supprimer',
         onConfirm: () => Navigator.of(ctx).pop(true),
       ),
@@ -48,7 +50,8 @@ class DeleteConfirmDialog extends StatelessWidget {
                 color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 32),
+              child: const Icon(Icons.delete_outline_rounded,
+                  color: AppColors.error, size: 32),
             ),
             const SizedBox(height: 16),
             Text(
@@ -79,11 +82,14 @@ class DeleteConfirmDialog extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       side: const BorderSide(color: AppColors.cardBorder),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text(
                       'Annuler',
-                      style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -95,11 +101,13 @@ class DeleteConfirmDialog extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       backgroundColor: AppColors.error,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     child: Text(
                       confirmText,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

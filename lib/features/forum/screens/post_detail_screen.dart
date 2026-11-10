@@ -55,11 +55,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  Future<void> _submitComment(ForumPostModel post, String currentUserId, String currentUserName, String currentUserRole) async {
-    final validationError = ForumValidators.validateComment(_commentController.text);
+  Future<void> _submitComment(ForumPostModel post, String currentUserId,
+      String currentUserName, String currentUserRole) async {
+    final validationError =
+        ForumValidators.validateComment(_commentController.text);
     if (validationError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(validationError), backgroundColor: AppColors.error),
+        SnackBar(
+            content: Text(validationError), backgroundColor: AppColors.error),
       );
       return;
     }
@@ -105,7 +108,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final currentUserRole = user?.isProfessional == true ? 'Artisan' : 'Client';
 
     final forumProvider = context.watch<ForumProvider>();
-    final postIndex = forumProvider.posts.indexWhere((p) => p.id == widget.postId);
+    final postIndex =
+        forumProvider.posts.indexWhere((p) => p.id == widget.postId);
 
     if (postIndex == -1) {
       return Scaffold(
@@ -153,7 +157,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   final confirm = await DeleteConfirmDialog.show(
                     context,
                     title: 'Supprimer la question ?',
-                    message: 'Cette action supprimera définitivement la question et toutes ses réponses.',
+                    message:
+                        'Cette action supprimera définitivement la question et toutes ses réponses.',
                   );
                   if (confirm == true && context.mounted) {
                     await forumProvider.deletePost(post.id);
@@ -166,7 +171,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.edit_outlined, size: 18, color: AppColors.textPrimary),
+                      Icon(Icons.edit_outlined,
+                          size: 18, color: AppColors.textPrimary),
                       SizedBox(width: 8),
                       Text('Modifier'),
                     ],
@@ -176,9 +182,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                      Icon(Icons.delete_outline,
+                          size: 18, color: AppColors.error),
                       SizedBox(width: 8),
-                      Text('Supprimer', style: TextStyle(color: AppColors.error)),
+                      Text('Supprimer',
+                          style: TextStyle(color: AppColors.error)),
                     ],
                   ),
                 ),
@@ -209,7 +217,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: categoryColor.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(20),
@@ -226,17 +235,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             const Spacer(),
                             if (post.isResolved)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3.5),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFDCFCE7),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFF86EFAC)),
+                                  border: Border.all(
+                                      color: const Color(0xFF86EFAC)),
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.check_circle_rounded, size: 12, color: AppColors.success),
+                                    Icon(Icons.check_circle_rounded,
+                                        size: 12, color: AppColors.success),
                                     SizedBox(width: 4),
-                                    Text('Résolu', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success)),
+                                    Text('Résolu',
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.success)),
                                   ],
                                 ),
                               ),
@@ -267,7 +283,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         ),
 
                         // Attached Image if exists
-                        if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
+                        if (post.imageUrl != null &&
+                            post.imageUrl!.isNotEmpty) ...[
                           const SizedBox(height: 14),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
@@ -298,7 +315,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               name: post.authorName,
                               imageUrl: post.authorAvatar,
                               radius: 17,
-                              showVerifiedBadge: post.authorRole.toLowerCase().contains('artisan'),
+                              showVerifiedBadge: post.authorRole
+                                  .toLowerCase()
+                                  .contains('artisan'),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -307,11 +326,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 children: [
                                   Text(
                                     post.authorName,
-                                    style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                    style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textPrimary),
                                   ),
                                   Text(
                                     'Posté ${RelativeTimeFormatter.format(post.createdAt)}',
-                                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textMuted),
                                   ),
                                 ],
                               ),
@@ -319,20 +343,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
                             // Upvote Toggle
                             InkWell(
-                              onTap: () => forumProvider.toggleUpvote(post.id, currentUserId),
+                              onTap: () => forumProvider.toggleUpvote(
+                                  post.id, currentUserId),
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: post.upvotedBy.contains(currentUserId) ? AppColors.primaryLight : AppColors.surfaceMuted,
+                                  color: post.upvotedBy.contains(currentUserId)
+                                      ? AppColors.primaryLight
+                                      : AppColors.surfaceMuted,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
-                                      post.upvotedBy.contains(currentUserId) ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
+                                      post.upvotedBy.contains(currentUserId)
+                                          ? Icons.thumb_up_rounded
+                                          : Icons.thumb_up_outlined,
                                       size: 16,
-                                      color: post.upvotedBy.contains(currentUserId) ? AppColors.primaryDark : AppColors.textSecondary,
+                                      color:
+                                          post.upvotedBy.contains(currentUserId)
+                                              ? AppColors.primaryDark
+                                              : AppColors.textSecondary,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
@@ -340,7 +373,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: post.upvotedBy.contains(currentUserId) ? AppColors.primaryDark : AppColors.textSecondary,
+                                        color: post.upvotedBy
+                                                .contains(currentUserId)
+                                            ? AppColors.primaryDark
+                                            : AppColors.textSecondary,
                                       ),
                                     ),
                                   ],
@@ -362,7 +398,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   // Comments section title
                   Row(
                     children: [
-                      const Icon(Icons.forum_outlined, size: 20, color: AppColors.primary),
+                      const Icon(Icons.forum_outlined,
+                          size: 20, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
                         'Réponses & Conseils (${forumProvider.comments.length})',
@@ -388,17 +425,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       ),
                       child: const Column(
                         children: [
-                          Icon(Icons.mark_chat_unread_outlined, size: 38, color: AppColors.textMuted),
+                          Icon(Icons.mark_chat_unread_outlined,
+                              size: 38, color: AppColors.textMuted),
                           SizedBox(height: 10),
                           Text(
                             'Aucune réponse pour le moment.',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textSecondary),
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Partagez votre expertise ou posez une précision ci-dessous.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                            style: TextStyle(
+                                fontSize: 12.5, color: AppColors.textMuted),
                           ),
                         ],
                       ),
@@ -409,14 +450,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         comment: c,
                         currentUserId: currentUserId,
                         isPostAuthor: isAuthor,
-                        onLike: () => forumProvider.toggleCommentLike(c.id, currentUserId),
-                        onDelete: () => forumProvider.deleteComment(c.id, post.id),
+                        onLike: () => forumProvider.toggleCommentLike(
+                            c.id, currentUserId),
+                        onDelete: () =>
+                            forumProvider.deleteComment(c.id, post.id),
                         onMarkSolution: () async {
-                          await forumProvider.markAcceptedSolution(post.id, c.id);
+                          await forumProvider.markAcceptedSolution(
+                              post.id, c.id);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('★ Solution validée avec succès ! Le sujet est maintenant résolu.'),
+                                content: Text(
+                                    '★ Solution validée avec succès ! Le sujet est maintenant résolu.'),
                                 backgroundColor: AppColors.success,
                               ),
                             );
@@ -434,7 +479,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
+              border: const Border(
+                  top: BorderSide(color: AppColors.cardBorder, width: 1)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
@@ -461,7 +507,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         style: const TextStyle(fontSize: 14),
                         decoration: const InputDecoration(
                           hintText: 'Partagez votre conseil ou solution...',
-                          hintStyle: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                          hintStyle: TextStyle(
+                              fontSize: 13, color: AppColors.textMuted),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(vertical: 10),
                         ),
@@ -472,7 +519,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   InkWell(
                     onTap: _isSending
                         ? null
-                        : () => _submitComment(post, currentUserId, currentUserName, currentUserRole),
+                        : () => _submitComment(post, currentUserId,
+                            currentUserName, currentUserRole),
                     borderRadius: BorderRadius.circular(24),
                     child: Container(
                       height: 44,
@@ -486,10 +534,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2),
                               ),
                             )
-                          : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                          : const Icon(Icons.send_rounded,
+                              color: Colors.white, size: 20),
                     ),
                   ),
                 ],

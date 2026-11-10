@@ -37,8 +37,10 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.postToEdit?.title ?? '');
-    _contentController = TextEditingController(text: widget.postToEdit?.content ?? '');
+    _titleController =
+        TextEditingController(text: widget.postToEdit?.title ?? '');
+    _contentController =
+        TextEditingController(text: widget.postToEdit?.content ?? '');
     _selectedCategory = widget.postToEdit?.category ?? 'Plomberie';
     _imagePath = widget.postToEdit?.imageUrl;
     _isResolved = widget.postToEdit?.isResolved ?? false;
@@ -100,11 +102,15 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
             children: [
               const Text(
                 'Ajouter une photo du diagnostic',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary),
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+                leading: const Icon(Icons.camera_alt_rounded,
+                    color: AppColors.primary),
                 title: const Text('Prendre une photo'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -112,7 +118,8 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
+                leading: const Icon(Icons.photo_library_rounded,
+                    color: AppColors.primary),
                 title: const Text('Choisir depuis la galerie'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -135,7 +142,8 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
     final categoryError = ForumValidators.validateCategory(_selectedCategory);
     if (categoryError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(categoryError), backgroundColor: AppColors.error),
+        SnackBar(
+            content: Text(categoryError), backgroundColor: AppColors.error),
       );
       return;
     }
@@ -187,7 +195,9 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.postToEdit != null ? 'Modifications enregistrées !' : 'Question publiée avec succès !'),
+          content: Text(widget.postToEdit != null
+              ? 'Modifications enregistrées !'
+              : 'Question publiée avec succès !'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -207,7 +217,8 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Abandonner la saisie ?'),
-            content: const Text('Vos modifications ne seront pas enregistrées.'),
+            content:
+                const Text('Vos modifications ne seront pas enregistrées.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -215,8 +226,10 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-                child: const Text('Abandonner', style: TextStyle(color: Colors.white)),
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                child: const Text('Abandonner',
+                    style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -243,7 +256,10 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                 // Category Picker Dropdown
                 const Text(
                   'Corps de métier concerné *',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -257,7 +273,8 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: _selectedCategory,
-                      icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
+                      icon: const Icon(Icons.arrow_drop_down_rounded,
+                          color: AppColors.primary),
                       items: ForumCategoryModel.categories.map((cat) {
                         return DropdownMenuItem<String>(
                           value: cat.name,
@@ -265,7 +282,10 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                             children: [
                               Icon(cat.icon, size: 18, color: cat.color),
                               const SizedBox(width: 10),
-                              Text(cat.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              Text(cat.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14)),
                             ],
                           ),
                         );
@@ -288,14 +308,19 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                   children: [
                     const Text(
                       'Titre de votre question *',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary),
                     ),
                     Text(
                       '${_titleController.text.length} / 90',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _titleController.text.length > 80 ? AppColors.warning : AppColors.textMuted,
+                        color: _titleController.text.length > 80
+                            ? AppColors.warning
+                            : AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -305,14 +330,22 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                   controller: _titleController,
                   validator: ForumValidators.validateTitle,
                   maxLength: 90,
-                  buildCounter: (_, {required currentLength, required isFocused, maxLength}) => const SizedBox.shrink(),
-                  style: const TextStyle(fontSize: 14.5, color: AppColors.textPrimary),
+                  buildCounter: (_,
+                          {required currentLength,
+                          required isFocused,
+                          maxLength}) =>
+                      const SizedBox.shrink(),
+                  style: const TextStyle(
+                      fontSize: 14.5, color: AppColors.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Ex: Fuite d\'eau sous évier, panne disjoncteur...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                    hintText:
+                        'Ex: Fuite d\'eau sous évier, panne disjoncteur...',
+                    hintStyle: const TextStyle(
+                        fontSize: 13, color: AppColors.textMuted),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: AppColors.cardBorder),
@@ -323,7 +356,8 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                      borderSide: const BorderSide(
+                          color: AppColors.primary, width: 1.5),
                     ),
                   ),
                 ),
@@ -336,14 +370,19 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                   children: [
                     const Text(
                       'Description détaillée du problème *',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary),
                     ),
                     Text(
                       '${_contentController.text.length} / 2000',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _contentController.text.length > 1800 ? AppColors.warning : AppColors.textMuted,
+                        color: _contentController.text.length > 1800
+                            ? AppColors.warning
+                            : AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -354,11 +393,18 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                   validator: ForumValidators.validateContent,
                   maxLines: 6,
                   maxLength: 2000,
-                  buildCounter: (_, {required currentLength, required isFocused, maxLength}) => const SizedBox.shrink(),
-                  style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.45),
+                  buildCounter: (_,
+                          {required currentLength,
+                          required isFocused,
+                          maxLength}) =>
+                      const SizedBox.shrink(),
+                  style: const TextStyle(
+                      fontSize: 14, color: AppColors.textPrimary, height: 1.45),
                   decoration: InputDecoration(
-                    hintText: 'Expliquez ce qui s\'est passé, les symptômes constatés, les démarches déjà essayées...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                    hintText:
+                        'Expliquez ce qui s\'est passé, les symptômes constatés, les démarches déjà essayées...',
+                    hintStyle: const TextStyle(
+                        fontSize: 13, color: AppColors.textMuted),
                     filled: true,
                     fillColor: Colors.white,
                     contentPadding: const EdgeInsets.all(14),
@@ -372,7 +418,8 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                      borderSide: const BorderSide(
+                          color: AppColors.primary, width: 1.5),
                     ),
                   ),
                 ),
@@ -382,7 +429,10 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                 // Diagnostic Photo Attachment (Métier 5)
                 const Text(
                   'Photo du problème (Optionnel mais recommandé)',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 if (_imagePath != null && _imagePath!.isNotEmpty)
@@ -415,7 +465,8 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                               color: Colors.black54,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+                            child: const Icon(Icons.close_rounded,
+                                color: Colors.white, size: 18),
                           ),
                         ),
                       ),
@@ -430,13 +481,16 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.cardBorder, style: BorderStyle.solid),
+                        border: Border.all(
+                            color: AppColors.cardBorder,
+                            style: BorderStyle.solid),
                       ),
                       child: const Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_a_photo_outlined, color: AppColors.primary, size: 24),
+                            Icon(Icons.add_a_photo_outlined,
+                                color: AppColors.primary, size: 24),
                             SizedBox(width: 8),
                             Text(
                               'Ajouter une photo (caméra ou galerie)',
@@ -457,8 +511,12 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
                   SwitchListTile(
                     value: _isResolved,
                     onChanged: (val) => setState(() => _isResolved = val),
-                    title: const Text('Marquer ce sujet comme résolu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    subtitle: const Text('Indique aux artisans que votre problème a trouvé une solution.', style: TextStyle(fontSize: 12)),
+                    title: const Text('Marquer ce sujet comme résolu',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14)),
+                    subtitle: const Text(
+                        'Indique aux artisans que votre problème a trouvé une solution.',
+                        style: TextStyle(fontSize: 12)),
                     activeTrackColor: AppColors.success,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -468,7 +526,9 @@ class _CreateEditPostScreenState extends State<CreateEditPostScreen> {
 
                 // Submit Button
                 CustomButton(
-                  text: isEditing ? 'Enregistrer les modifications' : 'Publier ma question',
+                  text: isEditing
+                      ? 'Enregistrer les modifications'
+                      : 'Publier ma question',
                   icon: isEditing ? Icons.save_rounded : Icons.send_rounded,
                   isLoading: _isLoading,
                   onPressed: _isLoading ? null : _submitForm,

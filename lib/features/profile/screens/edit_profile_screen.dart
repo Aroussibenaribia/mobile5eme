@@ -1,180 +1,193 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/pro_avatar.dart';
+import '../../../core/widgets/editorial_widgets.dart';
+import '../../../core/widgets/feature_widgets.dart';
+import '../../../models/work_schedule.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/professional_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
-
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  late TextEditingController _nameController;
-  late TextEditingController _phoneController;
-  late TextEditingController _cityController;
-  late TextEditingController _addressController;
-
+  final _form = GlobalKey<FormState>();
+  late final TextEditingController _name, _phone, _city, _address;
+  final _bio = TextEditingController();
+  final Set<String> _days = {};
+  bool _acceptsBookings = true, _ready = false, _saving = false;
   @override
   void initState() {
     super.initState();
     final user = context.read<AuthService>().currentUser;
-    _nameController = TextEditingController(text: user?.fullName ?? '');
-    _phoneController = TextEditingController(text: user?.phone ?? '');
-    _cityController = TextEditingController(text: user?.city ?? '');
-    _addressController = TextEditingController(text: user?.address ?? '');
+    _name = TextEditingController(text: user?.fullName);
+    _phone = TextEditingController(text: user?.phone);
+    _city = TextEditingController(text: user?.city);
+    _address = TextEditingController(text: user?.address);
+    if (user?.isProfessional != true) {
+      _ready = true;
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadProfessional();
+      });
+    }
+  }
+
+  Future<void> _loadProfessional() async {
+    final source = context.read<ProfessionalService>();
+    await source.loadProfessionals();
+    if (!mounted) return;
+    final pro = source.getById(context.read<AuthService>().currentUser!.id);
+    if (pro == null) {
+      setState(() {});
+      return;
+    }
+    _bio.text = pro.bio;
+    _days.addAll(pro.availableDays);
+    setState(() {
+      _acceptsBookings = pro.isAvailable;
+      _ready = true;
+    });
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _cityController.dispose();
-    _addressController.dispose();
+    for (final c in [_name, _phone, _city, _address, _bio]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _handleSave() async {
-    if (!_formKey.currentState!.validate()) return;
-
+  Future<void> _save() async {
+    if (!_form.currentState!.validate() || _saving) return;
     final auth = context.read<AuthService>();
-    await auth.updateProfile(
-      fullName: _nameController.text.trim(),
-      phone: _phoneController.text.trim(),
-      city: _cityController.text.trim(),
-      address: _addressController.text.trim(),
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profil mis à jour avec succès !'),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    final professional = auth.currentUser?.isProfessional == true;
+    if (professional && _days.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Choisissez au moins un jour de travail.')));
+      return;
+    }
+    setState(() => _saving = true);
+    final ok = await runAction(
+        context,
+        () => auth.updateProfile(
+            fullName: _name.text,
+            phone: _phone.text,
+            city: _city.text,
+            address: _address.text,
+            bio: professional ? _bio.text : null,
+            availableDays: professional ? WorkSchedule.ordered(_days) : null,
+            isAvailable: professional ? _acceptsBookings : null),
+        success: 'Profil et disponibilités enregistrés.');
+    if (!mounted) return;
+    if (ok) {
       Navigator.pop(context);
+    } else {
+      setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthService>().currentUser;
-    final isLoading = context.watch<AuthService>().isLoading;
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Modifier mon profil'),
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Avatar with change icon
-                Stack(
-                  children: [
-                    ProAvatar(
-                      name: user?.fullName ?? 'U',
-                      imageUrl: user?.avatarUrl,
-                      radius: 46,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Changement d\'avatar (Prêt pour Firebase Storage)'),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Changer la photo de profil',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                CustomTextField(
-                  label: 'Nom complet',
-                  controller: _nameController,
-                  prefixIcon: Icons.person_outline,
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Nom obligatoire' : null,
-                ),
-
-                const SizedBox(height: 16),
-
-                CustomTextField(
-                  label: 'Numéro de téléphone',
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  prefixIcon: Icons.phone_outlined,
-                ),
-
-                const SizedBox(height: 16),
-
-                CustomTextField(
-                  label: 'Ville',
-                  controller: _cityController,
-                  prefixIcon: Icons.location_city_outlined,
-                ),
-
-                const SizedBox(height: 16),
-
-                CustomTextField(
-                  label: 'Adresse complète',
-                  hint: 'Rue, quartier, code postal...',
-                  controller: _addressController,
-                  prefixIcon: Icons.home_outlined,
-                  maxLines: 2,
-                ),
-
-                const SizedBox(height: 32),
-
-                CustomButton(
-                  text: 'Enregistrer les modifications',
-                  isLoading: isLoading,
-                  onPressed: _handleSave,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+        appBar: AppBar(title: const Text('Modifier mon profil')),
+        body: user == null
+            ? const FeatureEmpty(
+                title: 'Connectez-vous pour modifier votre profil')
+            : !_ready
+                ? Center(
+                    child: TextButton(
+                        onPressed: _loadProfessional,
+                        child: const Text('Charger mon profil professionnel')))
+                : ContentWidth(
+                    child: SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: const EdgeInsets.fromLTRB(22, 16, 22, 32),
+                        child: Form(
+                            key: _form,
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const PageIntro(
+                                      title: 'Vos informations,\nà jour.',
+                                      description:
+                                          'Les clients retrouvent ces informations sur votre fiche.'),
+                                  CustomTextField(
+                                      label: 'Nom complet',
+                                      controller: _name,
+                                      prefixIcon: Icons.person_outline,
+                                      validator: (v) =>
+                                          (v?.trim().length ?? 0) < 2
+                                              ? 'Indiquez votre nom complet.'
+                                              : null),
+                                  const SizedBox(height: 18),
+                                  CustomTextField(
+                                      label: 'Numéro de téléphone',
+                                      controller: _phone,
+                                      keyboardType: TextInputType.phone,
+                                      prefixIcon: Icons.phone_outlined,
+                                      validator: (v) =>
+                                          (v?.trim().length ?? 0) < 8
+                                              ? 'Au moins 8 caractères.'
+                                              : null),
+                                  const SizedBox(height: 18),
+                                  CustomTextField(
+                                      label: 'Ville',
+                                      controller: _city,
+                                      prefixIcon: Icons.location_city_outlined,
+                                      validator: (v) =>
+                                          (v?.trim().length ?? 0) < 2
+                                              ? 'Indiquez votre ville.'
+                                              : null),
+                                  const SizedBox(height: 18),
+                                  CustomTextField(
+                                      label: 'Adresse complète',
+                                      controller: _address,
+                                      maxLines: 2,
+                                      prefixIcon: Icons.home_outlined),
+                                  if (user.isProfessional) ...[
+                                    const SectionHeading('Votre activité'),
+                                    CustomTextField(
+                                        label: 'Présentation',
+                                        controller: _bio,
+                                        maxLines: 4),
+                                    const SectionHeading('Jours de travail'),
+                                    const Text(
+                                        'Sélectionnez les jours où vous acceptez de nouvelles interventions.'),
+                                    const SizedBox(height: 14),
+                                    WeekDays(
+                                        selected: WorkSchedule.ordered(_days),
+                                        onToggle: (day) => setState(() {
+                                              if (!_days.add(day)) {
+                                                _days.remove(day);
+                                              }
+                                            })),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                        'Créneaux de réservation : 08h–19h. Les rendez-vous déjà acceptés restent à honorer.'),
+                                    const SizedBox(height: 12),
+                                    SwitchListTile.adaptive(
+                                        contentPadding: EdgeInsets.zero,
+                                        title: const Text(
+                                            'Accepter de nouvelles réservations'),
+                                        subtitle: Text(_acceptsBookings
+                                            ? 'Votre planning est ouvert.'
+                                            : 'Les nouvelles réservations sont en pause.'),
+                                        value: _acceptsBookings,
+                                        onChanged: (v) => setState(
+                                            () => _acceptsBookings = v)),
+                                  ],
+                                  const SizedBox(height: 28),
+                                  CustomButton(
+                                      text: 'Enregistrer les modifications',
+                                      isLoading: _saving,
+                                      onPressed: _save),
+                                ])))));
   }
 }

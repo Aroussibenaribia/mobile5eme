@@ -143,7 +143,8 @@ class ContentModerator {
 
   /// Vérifie si l'utilisateur est sous le coup d'un cooldown anti-flood (30 secondes)
   /// Retourne le nombre de secondes restantes, ou 0 si l'action est autorisée.
-  static int checkRateLimitSecondsRemaining(String userId, {int cooldownSeconds = 30}) {
+  static int checkRateLimitSecondsRemaining(String userId,
+      {int cooldownSeconds = 30}) {
     if (userId.isEmpty) return 0;
     final lastTime = _lastActionTimestamps[userId];
     if (lastTime == null) return 0;

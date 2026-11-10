@@ -17,49 +17,49 @@ class ForumCategoryModel {
   });
 
   static List<ForumCategoryModel> get categories => const [
-    ForumCategoryModel(
-      id: 'plumbing',
-      name: 'Plomberie',
-      icon: Icons.plumbing_rounded,
-      color: AppColors.catPlumbing,
-      description: 'Fuites, tuyauterie, robinetterie, chauffe-eau',
-    ),
-    ForumCategoryModel(
-      id: 'electricity',
-      name: 'Électricité',
-      icon: Icons.bolt_rounded,
-      color: AppColors.catElectricity,
-      description: 'Pannes de courant, prises, tableaux électriques',
-    ),
-    ForumCategoryModel(
-      id: 'ac',
-      name: 'Climatisation',
-      icon: Icons.ac_unit_rounded,
-      color: AppColors.catAC,
-      description: 'Installation, entretien, recharge de gaz, dépannage',
-    ),
-    ForumCategoryModel(
-      id: 'paint',
-      name: 'Peinture',
-      icon: Icons.format_paint_rounded,
-      color: AppColors.catPaint,
-      description: 'Peinture intérieure, extérieure, enduits, finitions',
-    ),
-    ForumCategoryModel(
-      id: 'cleaning',
-      name: 'Nettoyage',
-      icon: Icons.cleaning_services_rounded,
-      color: AppColors.catCleaning,
-      description: 'Ménage régulier, grand nettoyage, vitres',
-    ),
-    ForumCategoryModel(
-      id: 'it',
-      name: 'Informatique',
-      icon: Icons.devices_rounded,
-      color: AppColors.catIT,
-      description: 'Réseaux WiFi, PC, imprimantes, caméras IP',
-    ),
-  ];
+        ForumCategoryModel(
+          id: 'plumbing',
+          name: 'Plomberie',
+          icon: Icons.plumbing_rounded,
+          color: AppColors.catPlumbing,
+          description: 'Fuites, tuyauterie, robinetterie, chauffe-eau',
+        ),
+        ForumCategoryModel(
+          id: 'electricity',
+          name: 'Électricité',
+          icon: Icons.bolt_rounded,
+          color: AppColors.catElectricity,
+          description: 'Pannes de courant, prises, tableaux électriques',
+        ),
+        ForumCategoryModel(
+          id: 'ac',
+          name: 'Climatisation',
+          icon: Icons.ac_unit_rounded,
+          color: AppColors.catAC,
+          description: 'Installation, entretien, recharge de gaz, dépannage',
+        ),
+        ForumCategoryModel(
+          id: 'paint',
+          name: 'Peinture',
+          icon: Icons.format_paint_rounded,
+          color: AppColors.catPaint,
+          description: 'Peinture intérieure, extérieure, enduits, finitions',
+        ),
+        ForumCategoryModel(
+          id: 'cleaning',
+          name: 'Nettoyage',
+          icon: Icons.cleaning_services_rounded,
+          color: AppColors.catCleaning,
+          description: 'Ménage régulier, grand nettoyage, vitres',
+        ),
+        ForumCategoryModel(
+          id: 'it',
+          name: 'Informatique',
+          icon: Icons.devices_rounded,
+          color: AppColors.catIT,
+          description: 'Réseaux WiFi, PC, imprimantes, caméras IP',
+        ),
+      ];
 
   static Color getColorForCategory(String categoryName) {
     for (final cat in categories) {
