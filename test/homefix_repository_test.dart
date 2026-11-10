@@ -80,7 +80,7 @@ void main() {
           '120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b');
       expect(hex(PasswordHasher.derive('password', utf8.encode('salt'), 2)),
           'ae4d0c95af6b46d32d0adff928f06dd02a303f8ef3c251dfd6e2d85a95474c43');
-    });
+  });
     test('uses independent salts and rejects incorrect/malformed credentials',
         () async {
       final next = await PasswordHasher.hash(demoPassword);
@@ -114,11 +114,11 @@ void main() {
     setUp(() async {
       db = await fixtureDatabase();
       repo = HomeFixRepository(database: () async => db);
-    });
+  });
     tearDown(() async {
       repo.dispose();
       await db.close();
-    });
+  });
 
     test('auth persists its session and logout removes access', () async {
       final auth = AuthService(repository: repo);
@@ -136,7 +136,7 @@ void main() {
       expect(await repo.currentUser(), isNull);
       expect(await repo.bookings(), isEmpty);
       auth.dispose();
-    });
+  });
     test('public registration cannot grant admin and duplicate email is atomic',
         () async {
       await expectLater(
@@ -160,7 +160,7 @@ void main() {
           throwsA(isA<HomeFixException>()));
       expect((await db.query('users')).length, 5);
       expect((await db.query('professionals')).length, 2);
-    });
+  });
 
     test('unchecked remember-me remains valid only until the next app session',
         () async {
@@ -169,7 +169,7 @@ void main() {
       expect(await repo.restoreSession(), isNull);
       await login('client');
       expect((await repo.restoreSession())!.id, 'client');
-    });
+  });
 
     test('session migration preserves an existing remembered login', () async {
       await db.execute('DROP TABLE app_session');
@@ -178,7 +178,7 @@ void main() {
       await db.insert('app_session', {'id': 1, 'userId': 'client'});
       await AppSchema.create(db, seed: false);
       expect((await repo.restoreSession())!.id, 'client');
-    });
+  });
     test(
         'registration creates a linked pro; profile updates reach the catalogue',
         () async {
@@ -201,7 +201,7 @@ void main() {
       final row =
           (await db.query('users', where: 'id=?', whereArgs: [user.id])).single;
       expect(row['passwordHash'], isNot(demoPassword));
-    });
+  });
     test('professional working days persist and control new bookings',
         () async {
       await login('pro');
@@ -240,7 +240,7 @@ void main() {
       expect((await repo.bookings()).single.id, accepted);
       await login('client');
       await expectLater(book(monday), throwsA(isA<HomeFixException>()));
-    });
+  });
     test(
         'schedule validation and professional role protect atomic profile updates',
         () async {
@@ -271,7 +271,7 @@ void main() {
               isAvailable: false),
           throwsA(isA<HomeFixException>()));
       expect((await repo.currentUser())!.fullName, 'client');
-    });
+  });
     test('professional catalogue loads SQLite and filters existing API',
         () async {
       final service = ProfessionalService(repository: repo);
@@ -283,7 +283,7 @@ void main() {
       service.setSearchQuery('pro2');
       expect(service.filteredProfessionals.single.id, 'pro2');
       service.dispose();
-    });
+  });
     test('service CRUD checks ownership and preserves linked bookings',
         () async {
       await login('pro');
@@ -320,7 +320,7 @@ void main() {
           isFalse);
       expect(await repo.deleteService(created.id), isTrue);
       expect((await repo.bookings()).length, 1);
-    });
+  });
     test('bookings derive users and snapshot service data', () async {
       await login('client');
       final id = await book();
@@ -339,7 +339,7 @@ void main() {
       expect(old.estimatedPrice, 55);
       expect(old.serviceTitle, 'Réparer une fuite');
       expect(old.durationMinutes, 60);
-    });
+  });
     test(
         'overlapping slots conflict, adjacent slots work and cancellation releases time',
         () async {
@@ -354,7 +354,7 @@ void main() {
       await login('client2');
       await book();
       expect((await repo.bookings()).length, 2);
-    });
+  });
     test('concurrent reservation attempts cannot double-book', () async {
       await login('client');
       final results = await Future.wait([
@@ -363,7 +363,7 @@ void main() {
       ]);
       expect(results.whereType<String>().length, 1);
       expect(results.whereType<HomeFixException>().length, 1);
-    });
+  });
     test('rejects unavailable services, invalid hours and stale prices',
         () async {
       await login('client');
@@ -380,7 +380,7 @@ void main() {
       await repo.deleteService('service_pro');
       await login('client');
       await expectLater(book(), throwsA(isA<HomeFixException>()));
-    });
+  });
     test('status transitions belong to the correct professional/client',
         () async {
       await login('client');
@@ -401,7 +401,7 @@ void main() {
       await login('client');
       await expectLater(repo.updateBookingStatus(id, BookingStatus.cancelled),
           throwsA(isA<HomeFixException>()));
-    });
+  });
     test(
         'SQL foreign keys reject mismatched booking and complaint participants',
         () async {
@@ -423,7 +423,7 @@ void main() {
             'updatedAt': DateTime.now().toIso8601String()
           }),
           throwsA(isA<DatabaseException>()));
-    });
+  });
     test(
         'complaints are scoped to booking owner and prevent duplicate open cases',
         () async {
@@ -440,7 +440,7 @@ void main() {
       expect((await repo.reclamations()).single.clientId, 'client');
       await login('pro2');
       expect(await repo.reclamations(), isEmpty);
-    });
+  });
     test('only pending client complaints can be edited or deleted', () async {
       await login('client');
       final booking = await book();
@@ -453,7 +453,7 @@ void main() {
       expect((await repo.reclamations()).single.subject, 'Objet actualisé');
       await repo.deleteReclamation(id);
       expect(await repo.reclamations(), isEmpty);
-    });
+  });
     test(
         'only admin reviews; review locks client edits and terminal decisions are final',
         () async {
@@ -493,7 +493,7 @@ void main() {
           repo.reviewReclamation(id, ReclamationStatus.rejected,
               'Modifier une décision déjà clôturée.'),
           throwsA(isA<HomeFixException>()));
-    });
+  });
     test(
         'admin user tools protect admin accounts and suspend professional visibility',
         () async {
@@ -509,13 +509,25 @@ void main() {
       await repo.setUserActive('pro', true);
       await login('pro');
       expect((await repo.currentUser())!.isProfessional, isTrue);
-    });
+  });
     test('admin password reset changes real credentials', () async {
       await login('admin');
       await repo.resetUserPassword('client', 'ChangedPass123!');
       await expectLater(login('client'), throwsA(isA<HomeFixException>()));
       await repo.login('client@homefix.test', 'ChangedPass123!');
       expect((await repo.currentUser())!.id, 'client');
+  });
+    test('messaging allows sending, reading conversation, and listing conversations', () async {
+      await login('client');
+      await repo.sendMessage(receiverId: 'pro', content: 'Bonjour pro!');
+      final conversation = await repo.getConversation('pro');
+      expect(conversation.length, 1);
+      expect(conversation.first.content, 'Bonjour pro!');
+
+      final list = await repo.getConversationList();
+      expect(list.length, 1);
+      expect(list.first.otherUserId, 'pro');
+      expect(list.first.lastMessage, 'Bonjour pro!');
     });
   });
 

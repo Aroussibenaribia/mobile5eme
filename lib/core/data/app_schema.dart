@@ -62,11 +62,41 @@ class AppSchema {
       await db.execute(
           'ALTER TABLE app_session ADD COLUMN rememberMe INTEGER NOT NULL DEFAULT 1');
     }
+    // Messaging between users and artisans
+    await db.execute('''CREATE TABLE IF NOT EXISTS messages (
+      id TEXT PRIMARY KEY,
+      senderId TEXT NOT NULL REFERENCES users(id),
+      receiverId TEXT NOT NULL REFERENCES users(id),
+      senderName TEXT NOT NULL DEFAULT '',
+      receiverName TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      isRead INTEGER NOT NULL DEFAULT 0 CHECK(isRead IN (0,1)))''');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(senderId, createdAt)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_messages_receiver ON messages(receiverId, createdAt)');
+    // Password reset tokens (simulated email verification)
+    await db.execute('''CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token TEXT NOT NULL,
+      expiresAt TEXT NOT NULL,
+      usedAt TEXT)''');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_prt_userId ON password_reset_tokens(userId)');
     if (seed &&
         Sqflite.firstIntValue(
                 await db.rawQuery('SELECT COUNT(*) FROM users')) ==
             0) {
       await _seed(db);
+    }
+    if (seed &&
+        (Sqflite.firstIntValue(
+                await db.rawQuery('SELECT COUNT(*) FROM messages')) ??
+            0) ==
+            0) {
+      await _seedMessages(db);
     }
   }
 
@@ -233,5 +263,101 @@ class AppSchema {
       'createdAt': now.subtract(const Duration(hours: 5)).toIso8601String(),
       'updatedAt': now.toIso8601String()
     });
+    await _seedMessages(db);
+  }
+
+  static Future<void> _seedMessages(Database db) async {
+    final now = DateTime.now();
+    const clientSarra = 'client_sarra';
+    const proKarim = 'pro_karim';
+    const proInes = 'pro_ines';
+
+    // Verify users exist before inserting messages
+    final userCount = Sqflite.firstIntValue(await db.rawQuery(
+            'SELECT COUNT(*) FROM users WHERE id IN (?, ?, ?)',
+            [clientSarra, proKarim, proInes])) ??
+        0;
+    if (userCount < 2) return;
+
+    final demoMessages = [
+      // Conversation between Sarra (Client) and Karim (Artisan Plombier)
+      {
+        'id': 'msg_demo_1',
+        'senderId': clientSarra,
+        'receiverId': proKarim,
+        'senderName': 'Sarra Mansouri',
+        'receiverName': 'Karim Ben Ali',
+        'content':
+            'Bonjour Si Karim, j\'ai une fuite d\'eau sous l\'évier de cuisine.',
+        'createdAt':
+            now.subtract(const Duration(days: 2, hours: 3)).toIso8601String(),
+        'isRead': 1,
+      },
+      {
+        'id': 'msg_demo_2',
+        'senderId': proKarim,
+        'receiverId': clientSarra,
+        'senderName': 'Karim Ben Ali',
+        'receiverName': 'Sarra Mansouri',
+        'content':
+            'Bonjour Mme Sarra. Avez-vous fermé la vanne d\'arrêt principale ? Je peux passer demain matin vers 10h.',
+        'createdAt':
+            now.subtract(const Duration(days: 2, hours: 2, minutes: 40)).toIso8601String(),
+        'isRead': 1,
+      },
+      {
+        'id': 'msg_demo_3',
+        'senderId': clientSarra,
+        'receiverId': proKarim,
+        'senderName': 'Sarra Mansouri',
+        'receiverName': 'Karim Ben Ali',
+        'content': 'Oui la vanne est coupée. Vers 10h c\'est parfait, merci !',
+        'createdAt':
+            now.subtract(const Duration(days: 2, hours: 2, minutes: 20)).toIso8601String(),
+        'isRead': 1,
+      },
+      {
+        'id': 'msg_demo_4',
+        'senderId': proKarim,
+        'receiverId': clientSarra,
+        'senderName': 'Karim Ben Ali',
+        'receiverName': 'Sarra Mansouri',
+        'content':
+            'Parfait, c\'est noté. À demain avec les raccords et joints adaptés.',
+        'createdAt':
+            now.subtract(const Duration(days: 2, hours: 2)).toIso8601String(),
+        'isRead': 1,
+      },
+      // Conversation between Sarra (Client) and Inès (Artisan Électricienne)
+      {
+        'id': 'msg_demo_5',
+        'senderId': clientSarra,
+        'receiverId': proInes,
+        'senderName': 'Sarra Mansouri',
+        'receiverName': 'Inès Trabelsi',
+        'content':
+            'Bonjour Inès, faites-vous aussi la rénovation du tableau électrique ?',
+        'createdAt':
+            now.subtract(const Duration(hours: 4)).toIso8601String(),
+        'isRead': 1,
+      },
+      {
+        'id': 'msg_demo_6',
+        'senderId': proInes,
+        'receiverId': clientSarra,
+        'senderName': 'Inès Trabelsi',
+        'receiverName': 'Sarra Mansouri',
+        'content':
+            'Bonjour Sarra ! Oui tout à fait, remise aux normes complète et pose de disjoncteurs différentiels.',
+        'createdAt':
+            now.subtract(const Duration(hours: 1, minutes: 30)).toIso8601String(),
+        'isRead': 0, // Unread message for Sarra!
+      },
+    ];
+
+    for (final msg in demoMessages) {
+      await db.insert('messages', msg,
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
   }
 }

@@ -49,10 +49,12 @@ class ForumDatabase {
     return await factory.openDatabase(
       path,
       options: OpenDatabaseOptions(
-        version: 3,
+        version: 5,
         onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
         onUpgrade: (db, oldVersion, newVersion) async {
           if (oldVersion < 3) await AppSchema.create(db);
+          if (oldVersion < 4) await AppSchema.create(db);
+          if (oldVersion < 5) await AppSchema.create(db);
         },
         onCreate: _createDB,
       ),

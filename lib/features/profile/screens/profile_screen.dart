@@ -12,6 +12,9 @@ import '../../reviews_and_history/screens/reclamation_screens.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../auth/screens/register_screen.dart';
 import '../../auth/screens/forgot_password_screen.dart';
+import '../../messaging/screens/conversations_list_screen.dart';
+import '../../messaging/screens/conversation_screen.dart';
+import '../../../services/homefix_data.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -24,6 +27,10 @@ class ProfileScreen extends StatelessWidget {
     final user = auth.currentUser;
     final source = context.watch<ProfessionalService>();
     final pro = user == null ? null : source.getById(user.id);
+    final data = context.watch<HomeFixData>();
+    final conversations = data.conversations;
+    final totalUnread =
+        conversations.fold<int>(0, (sum, c) => sum + c.unreadCount);
     return Scaffold(
         appBar: AppBar(title: const Text('Mon espace')),
         body: ContentWidth(
@@ -158,6 +165,38 @@ class ProfileScreen extends StatelessWidget {
                           const Divider(),
                           ListTile(
                               contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.chat_bubble_outline),
+                              title: const Text('Mes messages'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (totalUnread > 0)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 7, vertical: 2),
+                                      margin: const EdgeInsets.only(right: 8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '$totalUnread',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  const Icon(Icons.arrow_forward, size: 18),
+                                ],
+                              ),
+                              onTap: () => _open(
+                                  context, const ConversationsListScreen())),
+                          const Divider(),
+                          ListTile(
+                              contentPadding: EdgeInsets.zero,
                               leading: const Icon(Icons.lock_outline),
                               title: const Text('Changer mon mot de passe'),
                               trailing:
@@ -165,6 +204,97 @@ class ProfileScreen extends StatelessWidget {
                               onTap: () =>
                                   _open(context, const ForgotPasswordScreen())),
                         ])),
+                        if (conversations.isNotEmpty) ...[
+                          SectionHeading(
+                            'Messages récents',
+                            action: TextButton(
+                              onPressed: () => _open(
+                                  context, const ConversationsListScreen()),
+                              child: const Text('Voir tout'),
+                            ),
+                          ),
+                          FeatureCard(
+                            child: Column(
+                              children: [
+                                for (var i = 0;
+                                    i < conversations.take(2).length;
+                                    i++) ...[
+                                  if (i > 0) const Divider(),
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: AppColors.primaryLight,
+                                      child: Text(
+                                        conversations[i].otherUserName.isNotEmpty
+                                            ? conversations[i]
+                                                .otherUserName[0]
+                                                .toUpperCase()
+                                            : '?',
+                                        style: const TextStyle(
+                                          color: AppColors.primaryDark,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      conversations[i].otherUserName,
+                                      style: TextStyle(
+                                        fontWeight: conversations[i].unreadCount > 0
+                                            ? FontWeight.w700
+                                            : FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      conversations[i].lastMessage,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: conversations[i].unreadCount > 0
+                                            ? AppColors.textPrimary
+                                            : AppColors.textSecondary,
+                                        fontWeight: conversations[i].unreadCount > 0
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    trailing: conversations[i].unreadCount > 0
+                                        ? Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              '${conversations[i].unreadCount}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          )
+                                        : const Icon(Icons.arrow_forward,
+                                            size: 16),
+                                    onTap: () => _open(
+                                      context,
+                                      ConversationScreen(
+                                        otherUserId:
+                                            conversations[i].otherUserId,
+                                        otherUserName:
+                                            conversations[i].otherUserName,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 12),
                         TextButton.icon(
                             onPressed: () => runAction(context, auth.logout),

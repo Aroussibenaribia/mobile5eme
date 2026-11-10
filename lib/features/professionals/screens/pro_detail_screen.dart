@@ -8,6 +8,7 @@ import '../../../models/professional_model.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/professional_service.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../messaging/screens/conversation_screen.dart';
 import '../../search_and_booking/screens/booking_screens.dart';
 
 class ProDetailScreen extends StatelessWidget {
@@ -30,12 +31,34 @@ class ProDetailScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _openMessage(
+      BuildContext context, ProfessionalModel pro) async {
+    final user = context.read<AuthService>().currentUser;
+    if (user == null) {
+      await Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ConversationScreen(
+                  otherUserId: pro.id,
+                  otherUserName: pro.name,
+                )));
+  }
+
   @override
   Widget build(BuildContext context) {
     final source = context.watch<ProfessionalService>();
     final pro = source.getById(professional.id);
     final user = context.watch<AuthService>().currentUser;
     final canBook = user == null || (!user.isProfessional && !user.isAdmin);
+    // Show message button only to clients (not to themselves, not to admins)
+    final canMessage = user != null &&
+        !user.isAdmin &&
+        !user.isProfessional &&
+        user.id != professional.id;
     return Scaffold(
         appBar: AppBar(title: const Text('Fiche artisan')),
         body: pro == null
@@ -84,6 +107,41 @@ class ProDetailScreen extends StatelessWidget {
                             '${pro.rating.toStringAsFixed(1)} · ${pro.reviewCount} avis',
                             color: AppColors.warning),
                     ]),
+                    // ── Message button ──────────────────────────────────────
+                    const SizedBox(height: 16),
+                    if (canMessage)
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _openMessage(context, pro),
+                          icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                          label: const Text('Envoyer un message'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: const BorderSide(color: AppColors.primary),
+                            foregroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      )
+                    else if (user == null)
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _openMessage(context, pro),
+                          icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                          label: const Text('Se connecter pour écrire'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: const BorderSide(color: AppColors.primary),
+                            foregroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    // ────────────────────────────────────────────────────────
                     if (pro.bio.isNotEmpty) ...[
                       const SectionHeading('Le savoir-faire'),
                       Text(pro.bio)

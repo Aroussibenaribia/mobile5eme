@@ -9,6 +9,8 @@ import '../../professionals/screens/pro_list_screen.dart';
 import '../../search_and_booking/screens/booking_screens.dart';
 import '../../reviews_and_history/screens/reclamation_screens.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../messaging/screens/conversations_list_screen.dart';
+import '../../../services/homefix_data.dart';
 
 class MainShellScreen extends StatefulWidget {
   final int initialIndex;
@@ -34,6 +36,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthService>().currentUser;
+    final data = context.watch<HomeFixData>();
+    final unreadMessages =
+        data.conversations.fold<int>(0, (sum, c) => sum + c.unreadCount);
+
     if (user?.isAdmin == true) return const AdminScreen();
     final screens = <Widget>[
       const HomeScreen(),
@@ -42,6 +48,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           : const ProListScreen(),
       const BookingListScreen(),
       const HistoryAndReclamationsScreen(),
+      const ConversationsListScreen(),
       const ProfileScreen(),
     ];
     return Scaffold(
@@ -68,6 +75,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
             setState(() {
               _currentIndex = index;
             });
+            if (index == 4) {
+              context.read<HomeFixData>().refresh();
+            }
           },
           items: [
             const BottomNavigationBarItem(
@@ -89,6 +99,19 @@ class _MainShellScreenState extends State<MainShellScreen> {
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long_rounded),
               label: 'Historique',
+            ),
+            BottomNavigationBarItem(
+              icon: Badge(
+                isLabelVisible: unreadMessages > 0,
+                label: Text('$unreadMessages'),
+                child: const Icon(Icons.chat_bubble_outline),
+              ),
+              activeIcon: Badge(
+                isLabelVisible: unreadMessages > 0,
+                label: Text('$unreadMessages'),
+                child: const Icon(Icons.chat_bubble_rounded),
+              ),
+              label: 'Messages',
             ),
             const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),

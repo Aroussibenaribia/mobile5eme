@@ -7,6 +7,7 @@ import '../../models/user_model.dart';
 import '../../models/professional_model.dart';
 import '../../models/booking_model.dart';
 import '../../models/reclamation_model.dart';
+import '../../models/message_model.dart';
 import '../../models/work_schedule.dart';
 import 'password_hasher.dart';
 
@@ -651,6 +652,199 @@ class HomeFixRepository extends ChangeNotifier {
       }
       await tx.update('users', {'passwordHash': hash},
           where: 'id=?', whereArgs: [id]);
+    });
+  }
+
+  // ─── MESSAGING ────────────────────────────────────────────────────────────
+
+  /// Send a message from the current user to [receiverId].
+  Future<void> sendMessage(
+      {required String receiverId, required String content}) async {
+    final body = _text(content, 'Message', min: 1, max: 2000);
+    final db = await database;
+    await db.transaction((tx) async {
+      final actor = await _actor(tx);
+      if (actor.id == receiverId) {
+        throw const HomeFixException(
+            'Vous ne pouvez pas vous écrire à vous-même.');
+      }
+      final target = await tx.query('users',
+          columns: ['id', 'fullName', 'isActive'],
+          where: 'id=?',
+          whereArgs: [receiverId]);
+      if (target.isEmpty || target.single['isActive'] != 1) {
+        throw const HomeFixException('Destinataire introuvable.');
+      }
+      await tx.insert('messages', {
+        'id': newId(),
+        'senderId': actor.id,
+        'receiverId': receiverId,
+        'senderName': actor.fullName,
+        'receiverName': target.single['fullName'] as String,
+        'content': body,
+        'createdAt': DateTime.now().toIso8601String(),
+        'isRead': 0,
+      });
+    });
+    notifyListeners();
+  }
+
+  /// Retrieve all messages in the conversation between the current user and [otherUserId].
+  Future<List<MessageModel>> getConversation(String otherUserId) async {
+    final db = await database;
+    final actor = await _actor(db);
+    final rows = await db.rawQuery(
+        '''SELECT * FROM messages WHERE
+           (senderId=? AND receiverId=?) OR (senderId=? AND receiverId=?)
+           ORDER BY createdAt ASC''',
+        [actor.id, otherUserId, otherUserId, actor.id]);
+    // Mark received messages as read
+    await db.update('messages', {'isRead': 1},
+        where: 'receiverId=? AND senderId=? AND isRead=0',
+        whereArgs: [actor.id, otherUserId]);
+    notifyListeners();
+    return rows.map(MessageModel.fromMap).toList();
+  }
+
+  /// Return a summary of every unique conversation the current user has had.
+  Future<List<ConversationSummary>> getConversationList() async {
+    final db = await database;
+    final actor = await _actor(db);
+
+    // Step 1: get all unique partner IDs (avoid DISTINCT bug with CASE by
+    // collecting both directions then deduplicating in Dart).
+    final sentRows = await db.rawQuery(
+        'SELECT DISTINCT receiverId AS otherId, receiverName AS otherName FROM messages WHERE senderId=?',
+        [actor.id]);
+    final receivedRows = await db.rawQuery(
+        'SELECT DISTINCT senderId AS otherId, senderName AS otherName FROM messages WHERE receiverId=?',
+        [actor.id]);
+
+    // Merge, keeping only unique partnerIds.
+    final seen = <String>{};
+    final partners = <Map<String, Object?>>[];
+    for (final row in [...sentRows, ...receivedRows]) {
+      final id = row['otherId'] as String;
+      if (seen.add(id)) partners.add(row);
+    }
+
+    // Step 2: for each partner, fetch their profile name, last message and unread count.
+    final summaries = <ConversationSummary>[];
+    for (final p in partners) {
+      final otherId = p['otherId'] as String;
+      final userRows = await db.query('users',
+          columns: ['fullName'], where: 'id=?', whereArgs: [otherId]);
+      final otherName = userRows.isNotEmpty
+          ? (userRows.first['fullName'] as String? ?? '')
+          : (p['otherName'] as String? ?? 'Utilisateur');
+      final lastRow = await db.rawQuery(
+          '''SELECT content, createdAt FROM messages
+             WHERE (senderId=? AND receiverId=?) OR (senderId=? AND receiverId=?)
+             ORDER BY createdAt DESC LIMIT 1''',
+          [actor.id, otherId, otherId, actor.id]);
+      final unreadRow = await db.rawQuery(
+          'SELECT COUNT(*) as cnt FROM messages WHERE senderId=? AND receiverId=? AND isRead=0',
+          [otherId, actor.id]);
+      summaries.add(ConversationSummary(
+        otherUserId: otherId,
+        otherUserName: otherName.isNotEmpty ? otherName : 'Utilisateur',
+        lastMessage: lastRow.isEmpty ? '' : lastRow.first['content'] as String,
+        lastMessageAt: lastRow.isEmpty
+            ? DateTime.now()
+            : DateTime.tryParse(lastRow.first['createdAt'] as String? ?? '') ??
+                DateTime.now(),
+        unreadCount: unreadRow.first['cnt'] as int? ?? 0,
+      ));
+    }
+    summaries.sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
+    return summaries;
+  }
+
+  /// Return the total number of unread messages for the current user.
+  Future<int> unreadMessageCount() async {
+    final db = await database;
+    final user = await currentUser(db);
+    if (user == null) return 0;
+    final row = await db.rawQuery(
+        'SELECT COUNT(*) as cnt FROM messages WHERE receiverId=? AND isRead=0',
+        [user.id]);
+    return row.first['cnt'] as int? ?? 0;
+  }
+
+  // ─── PASSWORD RESET (email verification simulation) ───────────────────────
+
+  /// Generates a 6-digit reset code for [email], stores it (expires in 15 min),
+  /// and returns the code so the UI can display it (simulated "email").
+  Future<String> requestPasswordReset(String email) async {
+    final cleanEmail = email.trim().toLowerCase();
+    final db = await database;
+    final rows = await db.query('users',
+        columns: ['id', 'isActive'],
+        where: 'email=?',
+        whereArgs: [cleanEmail]);
+    if (rows.isEmpty || rows.single['isActive'] != 1) {
+      // Don't reveal whether the email exists – same message either way.
+      throw const HomeFixException(
+          'Si cette adresse est enregistrée, vous recevrez un code.');
+    }
+    final userId = rows.single['id'] as String;
+    final code = (Random.secure().nextInt(900000) + 100000).toString();
+    final expires =
+        DateTime.now().add(const Duration(minutes: 15)).toIso8601String();
+    // Invalidate previous unused tokens for this user.
+    await db.delete('password_reset_tokens',
+        where: 'userId=? AND usedAt IS NULL', whereArgs: [userId]);
+    await db.insert('password_reset_tokens', {
+      'id': newId(),
+      'userId': userId,
+      'token': code,
+      'expiresAt': expires,
+    });
+    return code;
+  }
+
+  /// Verifies the [code] for [email] without consuming it.
+  Future<String> verifyResetToken(String email, String code) async {
+    final cleanEmail = email.trim().toLowerCase();
+    final db = await database;
+    final userRows = await db.query('users',
+        columns: ['id'], where: 'email=?', whereArgs: [cleanEmail]);
+    if (userRows.isEmpty) {
+      throw const HomeFixException('Code invalide ou expiré.');
+    }
+    final userId = userRows.single['id'] as String;
+    final tokenRows = await db.query('password_reset_tokens',
+        where: 'userId=? AND token=? AND usedAt IS NULL',
+        whereArgs: [userId, code]);
+    if (tokenRows.isEmpty) {
+      throw const HomeFixException('Code invalide ou expiré.');
+    }
+    final expires =
+        DateTime.tryParse(tokenRows.single['expiresAt'] as String? ?? '');
+    if (expires == null || DateTime.now().isAfter(expires)) {
+      throw const HomeFixException('Le code a expiré. Recommencez.');
+    }
+    return userId;
+  }
+
+  /// Resets the password after verifying the token. Consumes the token.
+  Future<void> resetPasswordWithToken(
+      String email, String code, String newPassword) async {
+    _password(newPassword);
+    await verifyResetToken(email, code); // also validates
+    final hash = await PasswordHasher.hash(newPassword);
+    final db = await database;
+    final userRows = await db.query('users',
+        columns: ['id'], where: 'email=?', whereArgs: [email.trim().toLowerCase()]);
+    final userId = userRows.single['id'] as String;
+    await db.transaction((tx) async {
+      await tx.update('users', {'passwordHash': hash},
+          where: 'id=?', whereArgs: [userId]);
+      await tx.update(
+          'password_reset_tokens',
+          {'usedAt': DateTime.now().toIso8601String()},
+          where: 'userId=? AND token=?',
+          whereArgs: [userId, code]);
     });
   }
 }

@@ -4,6 +4,7 @@ import '../models/user_model.dart';
 import '../models/service_model.dart';
 import '../models/booking_model.dart';
 import '../models/reclamation_model.dart';
+import '../models/message_model.dart';
 
 class HomeFixData extends ChangeNotifier {
   final HomeFixRepository repository;
@@ -11,6 +12,7 @@ class HomeFixData extends ChangeNotifier {
   List<BookingModel> bookings = [];
   List<ReclamationModel> reclamations = [];
   List<UserModel> users = [];
+  List<ConversationSummary> conversations = [];
   bool isLoading = false;
   String? error;
   bool _disposed = false;
@@ -33,11 +35,15 @@ class HomeFixData extends ChangeNotifier {
           : <ServiceModel>[];
       final nextUsers =
           actor?.isAdmin == true ? await repository.users() : <UserModel>[];
+      final nextConversations = actor != null
+          ? await repository.getConversationList()
+          : <ConversationSummary>[];
       if (_disposed || generation != _generation) return;
       bookings = nextBookings;
       reclamations = nextReclamations;
       services = nextServices;
       users = nextUsers;
+      conversations = nextConversations;
     } catch (e) {
       if (!_disposed && generation == _generation) {
         error = e is HomeFixException
@@ -47,6 +53,7 @@ class HomeFixData extends ChangeNotifier {
         reclamations = [];
         services = [];
         users = [];
+        conversations = [];
       }
     } finally {
       if (!_disposed && generation == _generation) {
